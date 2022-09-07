@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
 export default function ExitIframe() {
+  console.log('iFrame reached');
   const app = useAppBridge();
   const { search } = useLocation();
 
@@ -14,11 +15,14 @@ export default function ExitIframe() {
       const url = new URL(decodeURIComponent(redirectUri));
 
       if (url.hostname === location.hostname) {
+        console.log('Test');
         const redirect = Redirect.create(app);
         redirect.dispatch(
           Redirect.Action.REMOTE,
           decodeURIComponent(redirectUri)
         );
+      } else {
+        console.log('Test 2');
       }
     }
   }, [app, search]);
