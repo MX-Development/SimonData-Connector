@@ -46,6 +46,10 @@ Shopify.Context.initialize({
   SESSION_STORAGE: new Shopify.Session.SQLiteSessionStorage(DB_PATH),
 });
 
+console.log(process.env.SHOPIFY_API_KEY);
+console.log(process.env.SHOPIFY_API_SECRET);
+console.log(process.env.SCOPES);
+console.log(process.env.HOST);
 console.log(Shopify.Context.HOST_NAME);
 console.log(Shopify.Context.HOST_SCHEME);
 
