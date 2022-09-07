@@ -5,8 +5,6 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import { Shopify, LATEST_API_VERSION, DataType } from "@shopify/shopify-api";
 
-import axios from 'axios';
-
 import applyAuthMiddleware from "./middleware/auth.js";
 import verifyRequest from "./middleware/verify-request.js";
 import { setupGDPRWebHooks } from "./gdpr.js";
@@ -14,6 +12,8 @@ import productCreator from "./helpers/product-creator.js";
 import redirectToAuth from "./helpers/redirect-to-auth.js";
 import { BillingInterval } from "./helpers/ensure-billing.js";
 import { AppInstallations } from "./app_installations.js";
+
+import axios, { AxiosRequestConfig, AxiosPromise, AxiosResponse } from 'axios';
 
 const USE_ONLINE_TOKENS = false;
 
