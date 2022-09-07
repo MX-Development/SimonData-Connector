@@ -5,7 +5,7 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import { Shopify, LATEST_API_VERSION, DataType } from "@shopify/shopify-api";
 
-import axios from 'axios';
+// import axios from 'axios';
 
 import applyAuthMiddleware from "./middleware/auth.js";
 import verifyRequest from "./middleware/verify-request.js";
@@ -49,15 +49,15 @@ Shopify.Context.initialize({
 const axiosToSimonData = (data) => {
   console.log(`Send data to SimonData via Axios: `, data);
   return false;
-  axios.post(simonDataUrl, data, {
-    headers: axiosHeaders
-  })
-  .then((response) => {
-    console.log('SimonData response: ', response);
-  })
-  .catch((error) => {
-    console.log('SimonData error: ', error);
-  })
+  // axios.post(simonDataUrl, data, {
+  //   headers: axiosHeaders
+  // })
+  // .then((response) => {
+  //   console.log('SimonData response: ', response);
+  // })
+  // .catch((error) => {
+  //   console.log('SimonData error: ', error);
+  // })
 }
 
 // ----------------------------------------------------------------
