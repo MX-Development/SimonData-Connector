@@ -52,6 +52,8 @@ console.log(process.env.SCOPES);
 console.log(process.env.HOST);
 console.log(Shopify.Context.HOST_NAME);
 console.log(Shopify.Context.HOST_SCHEME);
+console.log(process.env.PORT);
+console.log(PORT);
 
 const axiosToSimonData = (data) => {
   console.log(`Send data to SimonData via Axios: `, data);

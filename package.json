@@ -13,8 +13,7 @@
   },
   "dependencies": {
     "@shopify/app": "3.9.2",
-    "@shopify/cli": "3.9.2",
-    "axios": "^0.27.2"
+    "@shopify/cli": "3.9.2"
   },
   "author": "mikeh"
 }
