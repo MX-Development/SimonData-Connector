@@ -5,7 +5,7 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import { Shopify, LATEST_API_VERSION, DataType } from "@shopify/shopify-api";
 
-// import axios from 'axios';
+import axios from 'axios';
 
 import applyAuthMiddleware from "./middleware/auth.js";
 import verifyRequest from "./middleware/verify-request.js";
@@ -23,12 +23,12 @@ const PORT = parseInt(process.env.BACKEND_PORT || process.env.PORT, 10);
 const DEV_INDEX_PATH = `${process.cwd()}/frontend/`;
 const PROD_INDEX_PATH = `${process.cwd()}/frontend/dist/`;
 
-const DB_PATH = `${process.cwd()}/database.sqlite`;
+const DB_PATH = `${process.cwd()}/database.sqlite`; 
 
 // SimonData
 const simonDataUrl = 'https://dev.simonsignal.com/events/v1/collect';
 const simonDataPartnerId = '965d8693f35e9ad1f64654190b9443334f223a39';
-const simonDataPartnerSecret = '';
+const simonDataPartnerSecret = '817effce84747b6079a86b2a6d62cca118751af6';
 const axiosHeaders = {
   'Content-Type': 'application/json',
   'Accept': 'application/json'
@@ -46,33 +46,38 @@ Shopify.Context.initialize({
   SESSION_STORAGE: new Shopify.Session.SQLiteSessionStorage(DB_PATH),
 });
 
+console.log(Shopify.Context.HOST_NAME);
+console.log(Shopify.Context.HOST_SCHEME);
+
 const axiosToSimonData = (data) => {
   console.log(`Send data to SimonData via Axios: `, data);
-  return false;
-  // axios.post(simonDataUrl, data, {
-  //   headers: axiosHeaders
-  // })
-  // .then((response) => {
-  //   console.log('SimonData response: ', response);
-  // })
-  // .catch((error) => {
-  //   console.log('SimonData error: ', error);
-  // })
+  // return false;
+  axios.post(simonDataUrl, data, {
+    headers: axiosHeaders
+  }) 
+  .then((response) => {
+    console.log('SimonData response: ', response);
+  })
+  .catch((error) => {
+    console.log('SimonData error: ', error); 
+  })
 }
 
 // ----------------------------------------------------------------
 
 //              W E B H O O K   H A N D L E R S
-
+ 
 // ----------------------------------------------------------------
 Shopify.Webhooks.Registry.addHandler("CUSTOMERS_CREATE", {
   path: "/api/webhooks",
   webhookHandler: async (_topic, shop, _body) => {
-    // Check if handler has fired
+    // Check if handler has fired 
     console.log(`${_topic} called by handler!`, _body);
 
     // Parse the body string to a JSON object
     const customerData = JSON.parse(_body);
+
+    console.log('Customer data: ', customerData);
 
     // Create data object to send to SimonData
     var data = {
@@ -80,14 +85,14 @@ Shopify.Webhooks.Registry.addHandler("CUSTOMERS_CREATE", {
       "partnerSecret": simonDataPartnerSecret,
       "type": "track",
       "event": "registration",
-      "clientId": customerData.id,
+      "clientId": (customerData.id).toString(),
       "ipAddress": "127.0.0.1",
       "timezone": new Date(customerData.created_at).getTimezoneOffset(),
       "sentAt": new Date(customerData.created_at).valueOf(),
       "properties": {
         "email": customerData.email,
         "username": customerData.first_name + ' ' + customerData.last_name,
-        "userId": customerData.id,
+        "userId": (customerData.id).toString(),
         "optIn": customerData.marketing_opt_in_level,
         "firstName": customerData.first_name,
         "lastName": customerData.last_name,
