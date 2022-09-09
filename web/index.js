@@ -588,7 +588,7 @@ export async function createServer(
       'checkouts/create',
       'orders/paid',
       'orders/fulfilled',
-      'orders/updated',
+      // 'orders/updated',
       'refunds/create',
       // 'subscription_contracts/create',
       // 'subscription_contracts/update'
