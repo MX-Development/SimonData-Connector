@@ -53,6 +53,7 @@ console.log('SimonData Connector active on URL: ', process.env.HOST);
 const axiosToSimonData = (data) => {
   
   return false; 
+  
   console.log(`Send data to SimonData via Axios: `, data);
   // return false;
   axios.post(simonDataUrl, data, {
@@ -202,7 +203,7 @@ Shopify.Webhooks.Registry.addHandler("CHECKOUTS_CREATE", {
     }
     
     // Axios POST request to SimonData Event Ingestion API
-    // axiosToSimonData(data);
+    axiosToSimonData(data);
 
   }
 });
@@ -260,7 +261,7 @@ Shopify.Webhooks.Registry.addHandler("ORDERS_PAID", {
     }
     
     // Axios POST request to SimonData Event Ingestion API
-    // axiosToSimonData(data);
+    axiosToSimonData(data);
 
   }
 });
@@ -375,6 +376,8 @@ Shopify.Webhooks.Registry.addHandler("PRODUCTS_UPDATE", {
 
     // Parse the body string to a JSON object
     const body = JSON.parse(_body);
+
+    console.log('Product update body: ', body);
 
   }
 });
@@ -604,8 +607,9 @@ export async function createServer(
       res,
       app.get("use-online-tokens")
     );
-
+    
     const necessaryWebhooks = [
+      'app/uninstalled',
       'customers/create',
       'checkouts/create',
       'orders/paid',
