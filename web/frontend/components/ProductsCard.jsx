@@ -69,6 +69,17 @@ export function ProductsCard() {
     // }
   };
 
+  const getAllEvents = async () => {
+    setIsLoading(true);
+    await fetch("/api/get-events")
+    .then(function(response) {
+      return response.json();
+    }).then(function(data) { 
+      console.log(data); // this will be a string
+      setIsLoading(false);
+    });
+  };
+
   const getAllWebhooks = async () => {
     setIsLoading(true);
     await fetch("/api/get-webhooks")
@@ -151,6 +162,7 @@ export function ProductsCard() {
             <button onClick={() => testButton()}>Test</button>
             <button onClick={() => createCartWebhook()}>Create cart webhook</button>
             <button onClick={() => createAccountWebhook()}>Create account webhook</button>
+            <button onClick={() => getAllEvents()}>Get all events</button>
             <button onClick={() => getAllWebhooks()}>Get all webhooks</button>
             <button onClick={() => createAllWebhooks()}>Create all webhooks</button>
             <button onClick={() => deleteAllWebhooks()}>Delete all webhooks</button>

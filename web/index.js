@@ -25,8 +25,10 @@ const PROD_INDEX_PATH = `${process.cwd()}/frontend/dist/`;
 
 const DB_PATH = `${process.cwd()}/database.sqlite`; 
 
+let hmacTest;
+
 // SimonData
-const simonDataUrl = 'https://dev.simonsignal.com/events/v1/collect';
+const simonDataUrl = 'https://simonsignal.com/http/v1/collect';
 const simonDataPartnerId = '965d8693f35e9ad1f64654190b9443334f223a39';
 const simonDataPartnerSecret = '817effce84747b6079a86b2a6d62cca118751af6';
 const axiosHeaders = {
@@ -46,16 +48,11 @@ Shopify.Context.initialize({
   SESSION_STORAGE: new Shopify.Session.SQLiteSessionStorage(DB_PATH),
 });
 
-console.log(process.env.SHOPIFY_API_KEY);
-console.log(process.env.SHOPIFY_API_SECRET);
-console.log(process.env.SCOPES);
-console.log(process.env.HOST);
-console.log(Shopify.Context.HOST_NAME);
-console.log(Shopify.Context.HOST_SCHEME);
-console.log(process.env.PORT);
-console.log(PORT);
+console.log('SimonData Connector active on URL: ', process.env.HOST);
 
 const axiosToSimonData = (data) => {
+  
+  return false; 
   console.log(`Send data to SimonData via Axios: `, data);
   // return false;
   axios.post(simonDataUrl, data, {
@@ -69,6 +66,65 @@ const axiosToSimonData = (data) => {
   })
 }
 
+const sendOrderedProducts = (body, products) => {
+  products.forEach(product => {
+
+    // Create data object to send to SimonData
+    var data = {
+      "partnerId": simonDataPartnerId,
+      "partnerSecret": simonDataPartnerSecret,
+      "type": "track",
+      "event": "custom",
+      "clientId": "test123456abcdef",
+      "timezone": new Date(body.created_at).getTimezoneOffset(),
+      "sentAt": new Date(body.created_at).valueOf(),
+      "properties": {
+          "eventName": "ordered_product",
+          "requiresIdentity": false
+      },
+      "traits": {
+          "orderId": body.id,
+          "product": product
+      }
+    }
+    
+    // Axios POST request to SimonData Event Ingestion API
+    axiosToSimonData(data);
+  })
+}
+
+const sendRevenue = (body) => {
+
+  // Create data object to send to SimonData
+  var data = {
+    "partnerId": simonDataPartnerId,
+    "partnerSecret": simonDataPartnerSecret,
+    "type": "track",
+    "event": "custom",
+    "clientId": "test123456abcdef",
+    "timezone": new Date(body.created_at).getTimezoneOffset(),
+    "sentAt": new Date(body.created_at).valueOf(),
+    "properties": {
+        "eventName": "revenue",
+        "requiresIdentity": false
+    },
+    "traits": {
+        "orderId": body.id,
+        "revenue": body.total_price
+    }
+  }
+  
+  // Axios POST request to SimonData Event Ingestion API
+  axiosToSimonData(data);
+}
+
+Shopify.Webhooks.Registry.addHandler("APP_UNINSTALLED", {
+  path: "/api/webhooks",
+  webhookHandler: async (_topic, shop, _body) => {
+    await AppInstallations.delete(shop);
+  },
+}); 
+ 
 // ----------------------------------------------------------------
 
 //              W E B H O O K   H A N D L E R S
@@ -77,13 +133,15 @@ const axiosToSimonData = (data) => {
 Shopify.Webhooks.Registry.addHandler("CUSTOMERS_CREATE", {
   path: "/api/webhooks",
   webhookHandler: async (_topic, shop, _body) => {
-    // Check if handler has fired 
-    console.log(`${_topic} called by handler!`, _body);
+    // Check if handler has fired
+    console.log(`Handler topic: `, _topic);
+
+    console.log('HMAC test: ', hmacTest);
 
     // Parse the body string to a JSON object
-    const customerData = JSON.parse(_body);
+    const body = JSON.parse(_body);
 
-    console.log('Customer data: ', customerData);
+    // No IP address: https://community.shopify.com/c/shopify-apis-and-sdks/customers-create-webhook-get-customer-ip/td-p/569982
 
     // Create data object to send to SimonData
     var data = {
@@ -91,46 +149,17 @@ Shopify.Webhooks.Registry.addHandler("CUSTOMERS_CREATE", {
       "partnerSecret": simonDataPartnerSecret,
       "type": "track",
       "event": "registration",
-      "clientId": (customerData.id).toString(),
-      "ipAddress": "127.0.0.1",
-      "timezone": new Date(customerData.created_at).getTimezoneOffset(),
-      "sentAt": new Date(customerData.created_at).valueOf(),
+      "clientId": "test123456abcdef",
+      "timezone": new Date(body.created_at).getTimezoneOffset(),
+      "sentAt": new Date(body.created_at).valueOf(),
       "properties": {
-        "email": customerData.email,
-        "username": customerData.first_name + ' ' + customerData.last_name,
-        "userId": (customerData.id).toString(),
-        "optIn": customerData.marketing_opt_in_level,
-        "firstName": customerData.first_name,
-        "lastName": customerData.last_name,
-        "name": customerData.first_name + ' ' + customerData.last_name
+        "email": body.email,
+        "userId": body.id,
+        "optIn": body.marketing_opt_in_level,
+        "firstName": body.first_name,
+        "lastName": body.last_name,
+        "name": body.first_name + ' ' + body.last_name
       }
-    }
-    
-    // Axios POST request to SimonData Event Ingestion API
-    axiosToSimonData(data);
-
-  }
-});
-
-
-Shopify.Webhooks.Registry.addHandler("APP_UNINSTALLED", {
-  path: "/api/webhooks",
-  webhookHandler: async (_topic, shop, _body) => {
-    await AppInstallations.delete(shop);
-  },
-});
-Shopify.Webhooks.Registry.addHandler("CARTS_UPDATE", {
-  path: "/api/webhooks",
-  webhookHandler: async (_topic, shop, _body) => {
-    // Check if handler has fired
-    console.log(`${_topic} called by handler!`, _body);
-
-    // Parse the body string to a JSON object
-    const customerData = JSON.parse(_body);
-
-    // Create data object to send to SimonData
-    var data = {
-      "partnerId": simonDataPartnerId
     }
     
     // Axios POST request to SimonData Event Ingestion API
@@ -143,34 +172,209 @@ Shopify.Webhooks.Registry.addHandler("CHECKOUTS_CREATE", {
   path: "/api/webhooks",
   webhookHandler: async (_topic, shop, _body) => {
     // Check if handler has fired
-    console.log(`${_topic} called by handler!`, _body);
+    console.log(`Handler topic: `, _topic);
 
-    // Parse the body string to a JSON object
-    const customerData = JSON.parse(_body);
+    console.log('HMAC test: ', hmacTest);
+
+    // Parse the body string to a JSON object 
+    const body = JSON.parse(_body);
 
     // Create data object to send to SimonData
     var data = {
       "partnerId": simonDataPartnerId,
       "partnerSecret": simonDataPartnerSecret,
       "type": "track",
-      "event": "registration",
-      "clientId": customerData.id,
-      "ipAddress": "127.0.0.1",
-      "timezone": new Date(customerData.created_at).getTimezoneOffset(),
-      "sentAt": new Date(customerData.created_at).valueOf(),
+      "event": "custom",
+      "clientId": "test123456abcdef",
+      "timezone": new Date(body.created_at).getTimezoneOffset(),
+      "sentAt": new Date(body.created_at).valueOf(),
       "properties": {
-        "email": customerData.email,
-        "username": customerData.first_name + ' ' + customerData.last_name,
-        "userId": customerData.id,
-        "optIn": customerData.marketing_opt_in_level,
-        "firstName": customerData.first_name,
-        "lastName": customerData.last_name,
-        "name": customerData.first_name + ' ' + customerData.last_name
+           "eventName": "checkout_created",
+           "requiresIdentity": false
+      },
+      "traits": {
+        "email": body.email,
+        "userId": body.id,
+        "firstName": body.first_name,
+        "lastName": body.last_name,
+        "name": body.first_name + ' ' + body.last_name
+      }
+    }
+    
+    // Axios POST request to SimonData Event Ingestion API
+    // axiosToSimonData(data);
+
+  }
+});
+
+Shopify.Webhooks.Registry.addHandler("ORDERS_PAID", {
+  path: "/api/webhooks",
+  webhookHandler: async (_topic, shop, _body) => {
+    // Check if handler has fired
+    console.log(`Handler topic: `, _topic);
+
+    console.log('HMAC test: ', hmacTest);
+
+    // Parse the body string to a JSON object
+    const body = JSON.parse(_body);
+
+    const lineItems = [];
+    (body.line_items).forEach(item => {
+      const product = {
+        "productId": item.product_id,
+        "variant": item.variant_id,
+        "sku": item.sku,
+        "productName": item.title,
+        "price": item.price,
+        "quantity": item.quantity
+      }
+
+      lineItems.push(product);
+    })
+
+    sendOrderedProducts(body, lineItems);
+
+    sendRevenue(body);
+
+    // Create data object to send to SimonData
+    var data = {
+      "partnerId": simonDataPartnerId,
+      "partnerSecret": simonDataPartnerSecret,
+      "type": "track",
+      "event": "complete_transaction",
+      "clientId": "test123456abcdef",
+      "ipAddress": body.browser_ip,
+      "timezone": new Date(body.created_at).getTimezoneOffset(),
+      "sentAt": new Date(body.created_at).valueOf(),
+      "properties": {
+           "eventName": "placed_order",
+           "requiresIdentity": false
+      },
+      "traits": {
+          "userId": body.customer.id,
+          "cartItems": lineItems,
+          "transactionId": body.checkout_id,
+          "revenue": body.total_price
+      },
+      "userId": body.customer.id,
+    }
+    
+    // Axios POST request to SimonData Event Ingestion API
+    // axiosToSimonData(data);
+
+  }
+});
+
+Shopify.Webhooks.Registry.addHandler("ORDERS_FULFILLED", {
+  path: "/api/webhooks",
+  webhookHandler: async (_topic, shop, _body) => {
+    // Check if handler has fired
+    console.log(`Handler topic: `, _topic);
+
+    // Parse the body string to a JSON object
+    const body = JSON.parse(_body);
+
+    console.log('Fulfilled body: ', body);
+
+    const lineItems = [];
+    (body.line_items).forEach(item => {
+      const product = {
+        "productId": item.product_id,
+        "variant": item.variant_id,
+        "productName": item.title,
+        "price": item.price,
+        "quantity": item.quantity
+      }
+
+      lineItems.push(product);
+    })
+
+    var data = {
+      "partnerId": simonDataPartnerId,
+      "partnerSecret": simonDataPartnerSecret,
+      "type": "track",
+      "event": "custom",
+      "clientId": "test123456abcdef",
+      "timezone": new Date(body.created_at).getTimezoneOffset(),
+      "sentAt": new Date(body.created_at).valueOf(),
+      "properties": {
+           "eventName": "fulfilled_order",
+           "requiresIdentity": false
+      },
+      "traits": {
+        "email": body.email,
+        "userId": body.customer.id,
+        "properties": {
+            "cartItems": lineItems,
+            "transactionId": body.checkout_id,
+            "revenue": body.total_price
+        }
       }
     }
     
     // Axios POST request to SimonData Event Ingestion API
     axiosToSimonData(data);
+
+  }
+});
+
+Shopify.Webhooks.Registry.addHandler("REFUNDS_CREATE", {
+  path: "/api/webhooks",
+  webhookHandler: async (_topic, shop, _body) => {
+    // Check if handler has fired
+    console.log(`Handler topic: `, _topic);
+
+    // Parse the body string to a JSON object
+    const body = JSON.parse(_body);
+
+    const lineItems = [];
+    (body.refund_line_items).forEach(item => {
+      const product = {
+        "productId": item.product_id,
+        "variant": item.variant_id,
+        "productName": item.title,
+        "price": item.price,
+        "quantity": item.quantity
+      }
+
+      lineItems.push(product);
+    })
+
+    var data = {
+      "partnerId": simonDataPartnerId,
+      "partnerSecret": simonDataPartnerSecret,
+      "type": "track",
+      "event": "custom",
+      "clientId": "test123456abcdef",
+      "timezone": new Date(body.created_at).getTimezoneOffset(),
+      "sentAt": new Date(body.created_at).valueOf(),
+      "properties": {
+           "eventName": "refunded_order",
+           "requiresIdentity": false
+      },
+      "traits": {
+        "userId": body.user_id,
+        "orderId": body.order_id,
+        "properties": {
+            "refundItems": lineItems
+        }
+      }
+    }
+    
+    // Axios POST request to SimonData Event Ingestion API
+    axiosToSimonData(data);
+
+  }
+});
+
+Shopify.Webhooks.Registry.addHandler("PRODUCTS_UPDATE", {
+  path: "/api/webhooks",
+  webhookHandler: async (_topic, shop, _body) => {
+    // Check if handler has fired
+    console.log(`Handler topic: `, _topic);
+
+    // Parse the body string to a JSON object
+    const body = JSON.parse(_body);
 
   }
 });
@@ -215,6 +419,10 @@ export async function createServer(
   // for more details.
   app.post("/api/webhooks", async (req, res) => {
     try {
+      const hmac = req.get('X-Shopify-Hmac-Sha256');
+      console.log('Cookies: ', req.cookies);
+
+      hmacTest = hmac;
       await Shopify.Webhooks.Registry.process(req, res);
       console.log(`Webhook processed, returned status code 200`);
     } catch (e) {
@@ -224,19 +432,6 @@ export async function createServer(
       }
     }
   });
-
-  // app.post("/webhooks/testing", async (req, res) => {
-  //   console.log('Posted to webhooks/order-created 1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111');
-  //   try {
-  //     await Shopify.Webhooks.Registry.process(req, res);
-  //     console.log(`Webhook processed, returned status code 200`);
-  //   } catch (e) {
-  //     console.log(`Failed to process webhook: ${e.message}`);
-  //     if (!res.headersSent) {
-  //       res.status(500).send(e.message);
-  //     }
-  //   }
-  // });
 
   // All endpoints after this point will require an active session
   // app.use(
@@ -293,6 +488,28 @@ export async function createServer(
   //              W E B H O O K   H A N D L E R S
 
   // ----------------------------------------------------------------
+
+  // Get all events
+  app.get("/api/get-events", async (req, res) => {
+
+    const session = await Shopify.Utils.loadCurrentSession(
+      req,
+      res,
+      app.get("use-online-tokens")
+    );
+
+    if (session) {
+      const { Event } = await import(
+        `@shopify/shopify-api/dist/rest-resources/${Shopify.Context.API_VERSION}/index.js`
+      );
+
+      const events = await Event.all({
+        session: session,
+      });
+  
+      res.status(200).send(events);
+    }
+  });
 
   // Get all webhooks
   app.get("/api/get-webhooks", async (req, res) => {
@@ -389,15 +606,16 @@ export async function createServer(
     );
 
     const necessaryWebhooks = [
-      'carts/update',
       'customers/create',
       'checkouts/create',
-      'orders/fulfilled',
       'orders/paid',
+      'orders/fulfilled',
       'orders/updated',
-      'products/update',
-      'subscription_contracts/create',
-      'subscription_contracts/update'
+      'refunds/create',
+      'products/update', 
+      'inventory_levels/update',
+      // 'subscription_contracts/create',
+      // 'subscription_contracts/update'
     ]
 
     if (session) {
