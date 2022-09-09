@@ -53,7 +53,7 @@ console.log('SimonData Connector active on URL: ', process.env.HOST);
 const axiosToSimonData = (data) => {
   
   return false; 
-  
+
   console.log(`Send data to SimonData via Axios: `, data);
   // return false;
   axios.post(simonDataUrl, data, {
@@ -137,8 +137,6 @@ Shopify.Webhooks.Registry.addHandler("CUSTOMERS_CREATE", {
     // Check if handler has fired
     console.log(`Handler topic: `, _topic);
 
-    console.log('HMAC test: ', hmacTest);
-
     // Parse the body string to a JSON object
     const body = JSON.parse(_body);
 
@@ -174,8 +172,6 @@ Shopify.Webhooks.Registry.addHandler("CHECKOUTS_CREATE", {
   webhookHandler: async (_topic, shop, _body) => {
     // Check if handler has fired
     console.log(`Handler topic: `, _topic);
-
-    console.log('HMAC test: ', hmacTest);
 
     // Parse the body string to a JSON object 
     const body = JSON.parse(_body);
@@ -213,8 +209,6 @@ Shopify.Webhooks.Registry.addHandler("ORDERS_PAID", {
   webhookHandler: async (_topic, shop, _body) => {
     // Check if handler has fired
     console.log(`Handler topic: `, _topic);
-
-    console.log('HMAC test: ', hmacTest);
 
     // Parse the body string to a JSON object
     const body = JSON.parse(_body);
@@ -274,8 +268,6 @@ Shopify.Webhooks.Registry.addHandler("ORDERS_FULFILLED", {
 
     // Parse the body string to a JSON object
     const body = JSON.parse(_body);
-
-    console.log('Fulfilled body: ', body);
 
     const lineItems = [];
     (body.line_items).forEach(item => {
@@ -368,20 +360,6 @@ Shopify.Webhooks.Registry.addHandler("REFUNDS_CREATE", {
   }
 });
 
-Shopify.Webhooks.Registry.addHandler("PRODUCTS_UPDATE", {
-  path: "/api/webhooks",
-  webhookHandler: async (_topic, shop, _body) => {
-    // Check if handler has fired
-    console.log(`Handler topic: `, _topic);
-
-    // Parse the body string to a JSON object
-    const body = JSON.parse(_body);
-
-    console.log('Product update body: ', body);
-
-  }
-});
-
 // The transactions with Shopify will always be marked as test transactions, unless NODE_ENV is production.
 // See the ensureBilling helper to learn more about billing in this template.
 const BILLING_SETTINGS = {
@@ -422,10 +400,6 @@ export async function createServer(
   // for more details.
   app.post("/api/webhooks", async (req, res) => {
     try {
-      const hmac = req.get('X-Shopify-Hmac-Sha256');
-      console.log('Cookies: ', req.cookies);
-
-      hmacTest = hmac;
       await Shopify.Webhooks.Registry.process(req, res);
       console.log(`Webhook processed, returned status code 200`);
     } catch (e) {
@@ -616,8 +590,6 @@ export async function createServer(
       'orders/fulfilled',
       'orders/updated',
       'refunds/create',
-      'products/update', 
-      'inventory_levels/update',
       // 'subscription_contracts/create',
       // 'subscription_contracts/update'
     ]
