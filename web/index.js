@@ -213,6 +213,9 @@ Shopify.Webhooks.Registry.addHandler("ORDERS_PAID", {
     // Parse the body string to a JSON object
     const body = JSON.parse(_body);
 
+
+    console.log('Orders paid body: ', body);
+
     const lineItems = [];
     (body.line_items).forEach(item => {
       const product = {
