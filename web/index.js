@@ -213,9 +213,6 @@ Shopify.Webhooks.Registry.addHandler("ORDERS_PAID", {
     // Parse the body string to a JSON object
     const body = JSON.parse(_body);
 
-
-    console.log('Orders paid body: ', body);
-
     const lineItems = [];
     (body.line_items).forEach(item => {
       const product = {
@@ -249,12 +246,12 @@ Shopify.Webhooks.Registry.addHandler("ORDERS_PAID", {
            "requiresIdentity": false
       },
       "traits": {
-          "userId": body.customer.id,
+          "userId": body.user_id,
           "cartItems": lineItems,
           "transactionId": body.checkout_id,
           "revenue": body.total_price
       },
-      "userId": body.customer.id,
+      "userId": body.user_id,
     }
     
     // Axios POST request to SimonData Event Ingestion API
@@ -299,7 +296,7 @@ Shopify.Webhooks.Registry.addHandler("ORDERS_FULFILLED", {
       },
       "traits": {
         "email": body.email,
-        "userId": body.customer.id,
+        "userId": body.user_id,
         "properties": {
             "cartItems": lineItems,
             "transactionId": body.checkout_id,
