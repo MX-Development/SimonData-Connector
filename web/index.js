@@ -25,8 +25,6 @@ const PROD_INDEX_PATH = `${process.cwd()}/frontend/dist/`;
 
 const DB_PATH = `${process.cwd()}/database.sqlite`; 
 
-let hmacTest;
-
 // SimonData
 const simonDataUrl = 'https://simonsignal.com/http/v1/collect';
 const simonDataPartnerId = '965d8693f35e9ad1f64654190b9443334f223a39';
@@ -51,10 +49,6 @@ Shopify.Context.initialize({
 console.log('SimonData Connector active on URL: ', process.env.HOST);
 
 const axiosToSimonData = (data) => {
-  
-  return false; 
-
-  console.log(`Send data to SimonData via Axios: `, data);
   // return false;
   axios.post(simonDataUrl, data, {
     headers: axiosHeaders
@@ -656,6 +650,12 @@ export async function createServer(
 
   // Send back in stock data to SimonData
   app.post("/api/back-in-stock", async (req, res) => {
+    
+    const session = await Shopify.Utils.loadCurrentSession(
+      req,
+      res,
+      app.get("use-online-tokens")
+    );
 
     console.log('Back in stock data: ', req.body);
     res.status(200).send({ "message": `Back in stock data success` });
