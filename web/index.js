@@ -50,17 +50,26 @@ Shopify.Context.initialize({
 
 console.log('SimonData Connector active on URL: ', process.env.HOST);
 
-const axiosToSimonData = (data) => {
+const axiosToSimonData = async (data) => {
   // return false;
-  axios.post(simonDataUrl, data, {
-    headers: axiosHeaders
-  }) 
-  .then((response) => {
-    console.log('SimonData response: ', response);
-  })
-  .catch((error) => {
-    console.log('SimonData error: ', error); 
-  })
+  try {
+    const result = await axios.post(simonDataUrl, data, {
+      headers: axiosHeaders
+    }) 
+    .then((response) => {
+      console.log('SimonData response: ', response);
+      return response;
+    })
+    .catch((error) => {
+      console.log('SimonData error: ', error); 
+    })
+
+    if (result) {
+      return true;
+    }
+  } catch (err) {
+    return false;
+  }
 }
 
 const sendOrderedProducts = (body, products) => {
@@ -411,29 +420,6 @@ export async function createServer(
 ) {
   const app = express();
 
-  app.set("use-online-tokens", USE_ONLINE_TOKENS);
-  app.use(cookieParser(Shopify.Context.API_SECRET_KEY));
-
-  applyAuthMiddleware(app, {
-    billing: billingSettings,
-  });
-
-  // Do not call app.use(express.json()) before processing webhooks with
-  // Shopify.Webhooks.Registry.process().
-  // See https://github.com/Shopify/shopify-api-node/blob/main/docs/usage/webhooks.md#note-regarding-use-of-body-parsers
-  // for more details.
-  app.post("/api/webhooks", async (req, res) => {
-    try {
-      await Shopify.Webhooks.Registry.process(req, res);
-      console.log(`Webhook processed, returned status code 200`);
-    } catch (e) {
-      console.log(`Failed to process webhook: ${e.message}`);
-      if (!res.headersSent) {
-        res.status(500).send(e.message);
-      }
-    }
-  });
-
   app.get("/api/back-in-stock", async (req, res) => {
 
     // Create data object to send to SimonData
@@ -456,8 +442,41 @@ export async function createServer(
     }
     
     // Axios POST request to SimonData Event Ingestion API
-    axiosToSimonData(data);
+    const result = await axiosToSimonData(data);
 
+    if (result) {
+      res.status(200).send({
+        "result": "success"
+      });
+    } else {
+      res.status(500).send({
+        "result": "failed"
+      });
+    }
+
+  });
+
+  app.set("use-online-tokens", USE_ONLINE_TOKENS);
+  app.use(cookieParser(Shopify.Context.API_SECRET_KEY));
+
+  applyAuthMiddleware(app, {
+    billing: billingSettings,
+  });
+
+  // Do not call app.use(express.json()) before processing webhooks with
+  // Shopify.Webhooks.Registry.process().
+  // See https://github.com/Shopify/shopify-api-node/blob/main/docs/usage/webhooks.md#note-regarding-use-of-body-parsers
+  // for more details.
+  app.post("/api/webhooks", async (req, res) => {
+    try {
+      await Shopify.Webhooks.Registry.process(req, res);
+      console.log(`Webhook processed, returned status code 200`);
+    } catch (e) {
+      console.log(`Failed to process webhook: ${e.message}`);
+      if (!res.headersSent) {
+        res.status(500).send(e.message);
+      }
+    }
   });
 
   // All endpoints after this point will require an active session
