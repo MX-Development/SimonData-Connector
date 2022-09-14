@@ -125,6 +125,34 @@ Shopify.Webhooks.Registry.addHandler("APP_UNINSTALLED", {
     await AppInstallations.delete(shop);
   },
 }); 
+
+Shopify.Webhooks.Registry.addHandler("SUBSCRIPTION_BILLING_ATTEMPTS_CHALLENGED", {
+  path: "/api/webhooks",
+  webhookHandler: async (_topic, shop, _body) => {
+    console.log(`Subscription ${_topic} fired. Noice.`);
+  },
+}); 
+
+Shopify.Webhooks.Registry.addHandler("SUBSCRIPTION_BILLING_ATTEMPTS_SUCCESS", {
+  path: "/api/webhooks",
+  webhookHandler: async (_topic, shop, _body) => {
+    console.log(`Subscription ${_topic} fired. Noice.`);
+  },
+}); 
+
+Shopify.Webhooks.Registry.addHandler("SUBSCRIPTION_CONTRACTS_CREATE", {
+  path: "/api/webhooks",
+  webhookHandler: async (_topic, shop, _body) => {
+    console.log(`Subscription ${_topic} fired. Noice.`);
+  },
+}); 
+
+Shopify.Webhooks.Registry.addHandler("SUBSCRIPTION_CONTRACTS_UPDATE", {
+  path: "/api/webhooks",
+  webhookHandler: async (_topic, shop, _body) => {
+    console.log(`Subscription ${_topic} fired. Noice.`);
+  },
+}); 
  
 // ----------------------------------------------------------------
 
@@ -204,7 +232,7 @@ Shopify.Webhooks.Registry.addHandler("CHECKOUTS_CREATE", {
   }
 });
 
-Shopify.Webhooks.Registry.addHandler("ORDERS_PAID", {
+Shopify.Webhooks.Registry.addHandler("ORDERS_PAID", { 
   path: "/api/webhooks",
   webhookHandler: async (_topic, shop, _body) => {
     // Check if handler has fired
@@ -590,8 +618,8 @@ export async function createServer(
       'orders/fulfilled',
       // 'orders/updated',
       'refunds/create',
-      // 'subscription_contracts/create',
-      // 'subscription_contracts/update'
+      'subscription_contracts/create',
+      'subscription_contracts/update'
     ]
 
     if (session) {
@@ -618,6 +646,20 @@ export async function createServer(
       res.status(200).send({ "message": `Webhooks succesfully created.` });
     }
 
+  });
+
+  // ----------------------------------------------------------
+
+  //               C U S T O M   R O U T E S
+
+  // ----------------------------------------------------------
+
+  // Send back in stock data to SimonData
+  app.post("/api/back-in-stock", async (req, res) => {
+
+    console.log('Back in stock data: ', req.body);
+    res.status(200).send({ "message": `Back in stock data success` });
+    
   });
 
   // All endpoints after this point will have access to a request.body
