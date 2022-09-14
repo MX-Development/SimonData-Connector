@@ -432,6 +432,8 @@ export async function createServer(
     }
   });
 
+  app.use("/custom-api/*");
+
   // All endpoints after this point will require an active session
   // app.use(
   //   "/webhooks/*",
@@ -649,13 +651,7 @@ export async function createServer(
   // ----------------------------------------------------------
 
   // Send back in stock data to SimonData
-  app.post("/api/back-in-stock", async (req, res) => {
-    
-    const session = await Shopify.Utils.loadCurrentSession(
-      req,
-      res,
-      app.get("use-online-tokens")
-    );
+  app.post("/custom-api/back-in-stock", async (req, res) => {
 
     console.log('Back in stock data: ', req.body);
     res.status(200).send({ "message": `Back in stock data success` });
