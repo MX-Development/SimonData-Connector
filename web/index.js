@@ -13,6 +13,8 @@ import redirectToAuth from "./helpers/redirect-to-auth.js";
 import { BillingInterval } from "./helpers/ensure-billing.js";
 import { AppInstallations } from "./app_installations.js";
 
+import customRoutes from './routes/custom.js';
+
 import axios from 'axios';
 
 const USE_ONLINE_TOKENS = false;
@@ -432,7 +434,31 @@ export async function createServer(
     }
   });
 
-  app.use("/custom-api/*");
+  app.get("/api/back-in-stock", async (req, res) => {
+
+    // Create data object to send to SimonData
+    var data = {
+      "partnerId": simonDataPartnerId,
+      "partnerSecret": simonDataPartnerSecret,
+      "type": "track",
+      "event": "custom",
+      "clientId": "test123456abcdef",
+      // "timezone": new Date(body.created_at).getTimezoneOffset(),
+      // "sentAt": new Date(body.created_at).valueOf(),
+      "properties": {
+           "eventName": "back_in_stock",
+           "requiresIdentity": false
+      },
+      "traits": {
+        "email": req.query.email,
+        "productID": req.query.productID
+      }
+    }
+    
+    // Axios POST request to SimonData Event Ingestion API
+    axiosToSimonData(data);
+
+  });
 
   // All endpoints after this point will require an active session
   // app.use(
@@ -649,14 +675,6 @@ export async function createServer(
   //               C U S T O M   R O U T E S
 
   // ----------------------------------------------------------
-
-  // Send back in stock data to SimonData
-  app.post("/custom-api/back-in-stock", async (req, res) => {
-
-    console.log('Back in stock data: ', req.body);
-    res.status(200).send({ "message": `Back in stock data success` });
-    
-  });
 
   // All endpoints after this point will have access to a request.body
   // attribute, as a result of the express.json() middleware
