@@ -445,13 +445,12 @@ export async function createServer(
       "properties": {
           "productId": req.body.productId,
           "productName": req.body.title,
-          "price": req.body.price
+          "price": req.body.price,
+          "customerId": req.body.customerId ? req.body.customerId : ''
       }
     }
 
     console.log('Sending product viewed: ', data);
-
-    return false;
     
     // Axios POST request to SimonData Event Ingestion API
     const result = await axiosToSimonData(data);
@@ -484,13 +483,8 @@ export async function createServer(
            "eventName": "subscription_created",
            "requiresIdentity": false
       },
-      "traits": {
-        // "email": req.body.email,
-        // "productID": req.body.variant
-      }
+      "traits": {}
     }
-
-    return false;
     
     // Axios POST request to SimonData Event Ingestion API
     const result = await axiosToSimonData(data);
@@ -523,13 +517,8 @@ export async function createServer(
            "eventName": "subscription_cancelled",
            "requiresIdentity": false
       },
-      "traits": {
-        // "email": req.body.email,
-        // "productID": req.body.variant
-      }
+      "traits": {}
     }
-
-    return false;
     
     // Axios POST request to SimonData Event Ingestion API
     const result = await axiosToSimonData(data);
