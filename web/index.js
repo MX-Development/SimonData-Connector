@@ -439,12 +439,14 @@ export async function createServer(
       },
       "traits": {
         "email": req.body.email,
-        "productID": req.body.productID
+        "productID": req.body.variant
       }
     }
     
     res.status(200)
     .send(data);
+
+    return false;
     
     // Axios POST request to SimonData Event Ingestion API
     const result = await axiosToSimonData(data);
