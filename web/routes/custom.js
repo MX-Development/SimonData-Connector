@@ -1,9 +1,8 @@
-const express = require('express');
+
+
+import express from "express";
 const router = express.Router();
 
-// Get Authentication
-router.post('/back-in-stock', async (req, res) => {
-  console.log('Back in stock data: ', req.body);
-});
-
-module.exports = router;
+export default function customRoutes(app) {
+  console.log('test');
+}

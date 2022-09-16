@@ -13,12 +13,13 @@ import redirectToAuth from "./helpers/redirect-to-auth.js";
 import { BillingInterval } from "./helpers/ensure-billing.js";
 import { AppInstallations } from "./app_installations.js";
 
+import customRoutes from './routes/custom.js';
+
 import axios from 'axios';
 
 const USE_ONLINE_TOKENS = false;
 
 const PORT = parseInt(process.env.BACKEND_PORT || process.env.PORT, 10);
-const ANON_PORT = 6000;
 
 // TODO: There should be provided by env vars
 const DEV_INDEX_PATH = `${process.cwd()}/frontend/`;
@@ -34,36 +35,6 @@ const axiosHeaders = {
   'Content-Type': 'application/json',
   'Accept': 'application/json'
 }
-
-// export for test use only
-const anonApp = express();
-anonApp.use(express.json());
-
-const customRoutes = require('./routes/custom');
-
-anonApp.use('/custom-api', customRoutes);
-
-function notFound(req, res, next) {
-  res.status(404);
-  const error = new Error('Not Found - ' + req.originalUrl);
-  next(error);
-}
-
-function errorHandler(err, req, res, next) {
-  res.status(res.statusCode || 500);
-  res.json({
-    message: err.message,
-    stack: err.stack
-  });
-}
-
-anonApp.use(notFound);
-anonApp.use(errorHandler);
-
-anonApp.listen(ANON_PORT, function() {
-  console.log('Custom Connector active on URL: ', ANON_PORT);
-});
-
 
 Shopify.Context.initialize({
   API_KEY: process.env.SHOPIFY_API_KEY,
@@ -449,6 +420,49 @@ export async function createServer(
 ) {
   const app = express();
 
+  app.get("/api/back-in-stock", async (req, res) => {
+
+    // Create data object to send to SimonData
+    var data = {
+      "partnerId": simonDataPartnerId,
+      "partnerSecret": simonDataPartnerSecret,
+      "type": "track",
+      "event": "custom",
+      "clientId": "test123456abcdef",
+      // "timezone": new Date(body.created_at).getTimezoneOffset(),
+      // "sentAt": new Date(body.created_at).valueOf(),
+      "properties": {
+           "eventName": "back_in_stock",
+           "requiresIdentity": false
+      },
+      "traits": {
+        "email": req.query.email,
+        "productID": req.query.productID
+      }
+    }
+    
+    res.status(200).send({
+      "result": data
+    });
+
+    return false;
+
+    
+    // Axios POST request to SimonData Event Ingestion API
+    const result = await axiosToSimonData(data);
+
+    if (result) {
+      res.status(200).send({
+        "result": "success"
+      });
+    } else {
+      res.status(500).send({
+        "result": "failed"
+      });
+    }
+
+  });
+
   app.set("use-online-tokens", USE_ONLINE_TOKENS);
   app.use(cookieParser(Shopify.Context.API_SECRET_KEY));
 
@@ -529,6 +543,16 @@ export async function createServer(
   // ----------------------------------------------------------------
 
   // Get all events
+  app.get("/custom-api/test", async (req, res) => {
+
+    console.log('Custom route');
+  
+      res.status(200).send({
+        "Route": "success"
+      });
+    
+  });
+
   app.get("/api/get-events", async (req, res) => {
 
     const session = await Shopify.Utils.loadCurrentSession(
@@ -750,6 +774,4 @@ export async function createServer(
   return { app };
 }
 
-createServer().then(({ app }) => {
-  app.listen(PORT)
-});
+createServer().then(({ app }) => app.listen(PORT));
