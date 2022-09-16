@@ -735,7 +735,8 @@ createServer().then(({ app }) => {
 // export for test use only
 const anonApp = express();
 
-anonApp.get("/api/back-in-stock", async (req, res) => {
+anonApp.post("/custom-api/back-in-stock", async (req, res) => {
+  console.log('Custom route called');
 
   // Create data object to send to SimonData
   var data = {
@@ -796,5 +797,5 @@ anonApp.use(notFound);
 anonApp.use(errorHandler);
 
 anonApp.listen(ANON_PORT, function() {
-  console.log("Server is running on Port: " + ANON_PORT);
+  console.log('Custom Connector active on URL: ', ANON_PORT);
 });
