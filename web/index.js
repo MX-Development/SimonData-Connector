@@ -20,6 +20,7 @@ import axios from 'axios';
 const USE_ONLINE_TOKENS = false;
 
 const PORT = parseInt(process.env.BACKEND_PORT || process.env.PORT, 10);
+const ANON_PORT = 6000;
 
 // TODO: There should be provided by env vars
 const DEV_INDEX_PATH = `${process.cwd()}/frontend/`;
@@ -51,7 +52,7 @@ Shopify.Context.initialize({
 console.log('SimonData Connector active on URL: ', process.env.HOST);
 
 const axiosToSimonData = async (data) => {
-  // return false;
+  return false;
   try {
     const result = await axios.post(simonDataUrl, data, {
       headers: axiosHeaders
@@ -420,42 +421,6 @@ export async function createServer(
 ) {
   const app = express();
 
-  app.get("/api/back-in-stock", async (req, res) => {
-
-    // Create data object to send to SimonData
-    var data = {
-      "partnerId": simonDataPartnerId,
-      "partnerSecret": simonDataPartnerSecret,
-      "type": "track",
-      "event": "custom",
-      "clientId": "test123456abcdef",
-      // "timezone": new Date(body.created_at).getTimezoneOffset(),
-      // "sentAt": new Date(body.created_at).valueOf(),
-      "properties": {
-           "eventName": "back_in_stock",
-           "requiresIdentity": false
-      },
-      "traits": {
-        "email": req.query.email,
-        "productID": req.query.productID
-      }
-    }
-    
-    // Axios POST request to SimonData Event Ingestion API
-    const result = await axiosToSimonData(data);
-
-    if (result) {
-      res.status(200).send({
-        "result": "success"
-      });
-    } else {
-      res.status(500).send({
-        "result": "failed"
-      });
-    }
-
-  });
-
   app.set("use-online-tokens", USE_ONLINE_TOKENS);
   app.use(cookieParser(Shopify.Context.API_SECRET_KEY));
 
@@ -658,9 +623,7 @@ export async function createServer(
       'orders/paid',
       'orders/fulfilled',
       // 'orders/updated',
-      'refunds/create',
-      'subscription_contracts/create',
-      'subscription_contracts/update'
+      'refunds/create'
     ]
 
     if (session) {
@@ -759,4 +722,79 @@ export async function createServer(
   return { app };
 }
 
-createServer().then(({ app }) => app.listen(PORT));
+createServer().then(({ app }) => {
+  app.listen(PORT)
+});
+
+
+
+
+
+
+
+// export for test use only
+const anonApp = express();
+
+anonApp.get("/api/back-in-stock", async (req, res) => {
+
+  // Create data object to send to SimonData
+  var data = {
+    "partnerId": simonDataPartnerId,
+    "partnerSecret": simonDataPartnerSecret,
+    "type": "track",
+    "event": "custom",
+    "clientId": "test123456abcdef",
+    // "timezone": new Date(body.created_at).getTimezoneOffset(),
+    // "sentAt": new Date(body.created_at).valueOf(),
+    "properties": {
+         "eventName": "back_in_stock",
+         "requiresIdentity": false
+    },
+    "traits": {
+      "email": req.query.email,
+      "productID": req.query.productID
+    }
+  }
+  
+  res.status(200).send({
+    "result": data
+  });
+
+  return false;
+
+  
+  // Axios POST request to SimonData Event Ingestion API
+  const result = await axiosToSimonData(data);
+
+  if (result) {
+    res.status(200).send({
+      "result": "success"
+    });
+  } else {
+    res.status(500).send({
+      "result": "failed"
+    });
+  }
+
+});
+
+function notFound(req, res, next) {
+  res.status(404);
+  const error = new Error('Not Found - ' + req.originalUrl);
+  next(error);
+}
+
+function errorHandler(err, req, res, next) {
+  res.status(res.statusCode || 500);
+  res.json({
+    message: err.message,
+    stack: err.stack
+  });
+}
+
+anonApp.use(notFound);
+anonApp.use(errorHandler);
+
+anonApp.listen(ANON_PORT, function() {
+  console.log("Server is running on Port: " + ANON_PORT);
+});
