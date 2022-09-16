@@ -420,33 +420,31 @@ export async function createServer(
 ) {
   const app = express();
 
+  app.use("/api/back-in-stock", express.json());
+
   app.post("/api/back-in-stock", async (req, res) => {
 
     // Create data object to send to SimonData
-    // var data = {
-    //   "partnerId": simonDataPartnerId,
-    //   "partnerSecret": simonDataPartnerSecret,
-    //   "type": "track",
-    //   "event": "custom",
-    //   "clientId": "test123456abcdef",
-    //   // "timezone": new Date(body.created_at).getTimezoneOffset(),
-    //   // "sentAt": new Date(body.created_at).valueOf(),
-    //   "properties": {
-    //        "eventName": "back_in_stock",
-    //        "requiresIdentity": false
-    //   },
-    //   "traits": {
-    //     "email": req.body.email,
-    //     "productID": req.body.productID
-    //   }
-    // }
+    var data = {
+      "partnerId": simonDataPartnerId,
+      "partnerSecret": simonDataPartnerSecret,
+      "type": "track",
+      "event": "custom",
+      "clientId": "test123456abcdef",
+      // "timezone": new Date(body.created_at).getTimezoneOffset(),
+      // "sentAt": new Date(body.created_at).valueOf(),
+      "properties": {
+           "eventName": "back_in_stock",
+           "requiresIdentity": false
+      },
+      "traits": {
+        "email": req.body.email,
+        "productID": req.body.productID
+      }
+    }
     
-    res.status(200).send({
-      "result": req.body
-    });
-
-    return false;
-
+    res.status(200)
+    .send(data);
     
     // Axios POST request to SimonData Event Ingestion API
     const result = await axiosToSimonData(data);
@@ -541,17 +539,6 @@ export async function createServer(
   //              W E B H O O K   H A N D L E R S
 
   // ----------------------------------------------------------------
-
-  // Get all events
-  app.get("/custom-api/test", async (req, res) => {
-
-    console.log('Custom route');
-  
-      res.status(200).send({
-        "Route": "success"
-      });
-    
-  });
 
   app.get("/api/get-events", async (req, res) => {
 
