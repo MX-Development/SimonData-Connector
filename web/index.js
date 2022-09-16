@@ -420,9 +420,9 @@ export async function createServer(
 ) {
   const app = express();
 
-  app.use("/api/back-in-stock", express.json());
+  app.use("/api/custom/*", express.json());
 
-  app.post("/api/back-in-stock", async (req, res) => {
+  app.post("/api/custom/back-in-stock", async (req, res) => {
 
     console.log('Body: ', req.body);
 
@@ -457,6 +457,53 @@ export async function createServer(
         "result": "failed"
       });
     }
+
+  });
+
+  app.post("/api/custom/recharge/get-subscriptions", async (req, res) => {
+
+    res.status(200).send({
+      "result": "success"
+    });
+
+  });
+
+  app.post("/api/custom/recharge/webhooks", async (req, res) => {
+    console.log('Recharge webhook successfully called. ');
+
+    console.log('Body: ', req.body);
+
+    // Create data object to send to SimonData
+    // var data = {
+    //   "partnerId": simonDataPartnerId,
+    //   "partnerSecret": simonDataPartnerSecret,
+    //   "type": "track",
+    //   "event": "custom",
+    //   "clientId": "test123456abcdef",
+    //   // "timezone": new Date(body.created_at).getTimezoneOffset(),
+    //   // "sentAt": new Date(body.created_at).valueOf(),
+    //   "properties": {
+    //        "eventName": "back_in_stock",
+    //        "requiresIdentity": false
+    //   },
+    //   "traits": {
+    //     "email": req.body.email,
+    //     "productID": req.body.variant
+    //   }
+    // }
+    
+    // // Axios POST request to SimonData Event Ingestion API
+    // const result = await axiosToSimonData(data);
+
+    // if (result) {
+    //   res.status(200).send({
+    //     "result": "success"
+    //   });
+    // } else {
+    //   res.status(500).send({
+    //     "result": "failed"
+    //   });
+    // }
 
   });
 
@@ -663,6 +710,11 @@ export async function createServer(
       // 'orders/updated',
       'refunds/create'
     ]
+    
+    const rechargeWebhooks = [
+      'subscription/created',
+      'subscription/cancelled'
+    ]
 
     if (session) {
       const { Webhook } = await import(
@@ -682,6 +734,32 @@ export async function createServer(
           console.log(`Webhook for ${webhook.topic} succesfully created.`);
         } catch (err) {
           console.log(err);   
+        }
+      })
+
+      rechargeWebhooks.forEach(async hook => {
+
+        const data = {
+          "address": `${process.env.HOST_NAME}/api/custom/recharge/webhooks`,
+          "topic": hook,
+          "included_objects": ["customer"]
+        }
+
+        try {
+          const result = await axios.post('https://api.rechargeapps.com/webhooks', data, {
+            headers: {
+              'X-Recharge-Access-Token': 'sk_1x1_7c97b258eaa1f7d5f216f064e94d7e62a3eea4f38d5809d6a15e0a5d3e937833',
+              'Content-Type': 'application/json'
+            }
+          }) 
+          .then((response) => {
+            console.log(`Recharge webhook for - succesfully created.`, response);
+          })
+          .catch((error) => {
+            console.log('Recharge error: ', error); 
+          })
+        } catch (err) {
+          console.log(err);  
         }
       })
 
