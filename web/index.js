@@ -130,34 +130,6 @@ Shopify.Webhooks.Registry.addHandler("APP_UNINSTALLED", {
     await AppInstallations.delete(shop);
   },
 }); 
-
-Shopify.Webhooks.Registry.addHandler("SUBSCRIPTION_BILLING_ATTEMPTS_CHALLENGED", {
-  path: "/api/webhooks",
-  webhookHandler: async (_topic, shop, _body) => {
-    console.log(`Subscription ${_topic} fired. Noice.`);
-  },
-}); 
-
-Shopify.Webhooks.Registry.addHandler("SUBSCRIPTION_BILLING_ATTEMPTS_SUCCESS", {
-  path: "/api/webhooks",
-  webhookHandler: async (_topic, shop, _body) => {
-    console.log(`Subscription ${_topic} fired. Noice.`);
-  },
-}); 
-
-Shopify.Webhooks.Registry.addHandler("SUBSCRIPTION_CONTRACTS_CREATE", {
-  path: "/api/webhooks",
-  webhookHandler: async (_topic, shop, _body) => {
-    console.log(`Subscription ${_topic} fired. Noice.`);
-  },
-}); 
-
-Shopify.Webhooks.Registry.addHandler("SUBSCRIPTION_CONTRACTS_UPDATE", {
-  path: "/api/webhooks",
-  webhookHandler: async (_topic, shop, _body) => {
-    console.log(`Subscription ${_topic} fired. Noice.`);
-  },
-}); 
  
 // ----------------------------------------------------------------
 
@@ -460,50 +432,117 @@ export async function createServer(
 
   });
 
-  app.post("/api/custom/recharge/get-subscriptions", async (req, res) => {
+  app.post("/api/custom/simon-data/product-viewed", async (req, res) => {
 
-    res.status(200).send({
-      "result": "success"
-    });
+    // Create data object to send to SimonData
+    var data = {
+      "partnerId": simonDataPartnerId,
+      "partnerSecret": simonDataPartnerSecret,
+      "event": "product_view",
+      "type": "track",
+      "clientId": "test123456abcdef",
+      "sentAt": new Date().valueOf(),
+      "properties": {
+          "productId": req.body.productId,
+          "productName": req.body.title,
+          "price": req.body.price
+      }
+    }
+
+    console.log('Sending product viewed: ', data);
+
+    return false;
+    
+    // Axios POST request to SimonData Event Ingestion API
+    const result = await axiosToSimonData(data);
+
+    if (result) {
+      res.status(200).send({
+        "result": "success"
+      });
+    } else {
+      res.status(500).send({
+        "result": "failed"
+      });
+    }
 
   });
 
-  app.post("/api/custom/recharge/webhooks", async (req, res) => {
-    console.log('Recharge webhook successfully called. ');
-
-    console.log('Body: ', req.body);
+  app.post("/api/custom/recharge/webhooks/created", async (req, res) => {
+    console.log('Recharge created webhook successfully called.');
 
     // Create data object to send to SimonData
-    // var data = {
-    //   "partnerId": simonDataPartnerId,
-    //   "partnerSecret": simonDataPartnerSecret,
-    //   "type": "track",
-    //   "event": "custom",
-    //   "clientId": "test123456abcdef",
-    //   // "timezone": new Date(body.created_at).getTimezoneOffset(),
-    //   // "sentAt": new Date(body.created_at).valueOf(),
-    //   "properties": {
-    //        "eventName": "back_in_stock",
-    //        "requiresIdentity": false
-    //   },
-    //   "traits": {
-    //     "email": req.body.email,
-    //     "productID": req.body.variant
-    //   }
-    // }
-    
-    // // Axios POST request to SimonData Event Ingestion API
-    // const result = await axiosToSimonData(data);
+    var data = {
+      "partnerId": simonDataPartnerId,
+      "partnerSecret": simonDataPartnerSecret,
+      "type": "track",
+      "event": "custom",
+      "clientId": "test123456abcdef",
+      // "timezone": new Date(body.created_at).getTimezoneOffset(),
+      // "sentAt": new Date(body.created_at).valueOf(),
+      "properties": {
+           "eventName": "subscription_created",
+           "requiresIdentity": false
+      },
+      "traits": {
+        // "email": req.body.email,
+        // "productID": req.body.variant
+      }
+    }
 
-    // if (result) {
-    //   res.status(200).send({
-    //     "result": "success"
-    //   });
-    // } else {
-    //   res.status(500).send({
-    //     "result": "failed"
-    //   });
-    // }
+    return false;
+    
+    // Axios POST request to SimonData Event Ingestion API
+    const result = await axiosToSimonData(data);
+
+    if (result) {
+      res.status(200).send({
+        "result": "success"
+      });
+    } else {
+      res.status(500).send({
+        "result": "failed"
+      });
+    }
+
+  });
+
+  app.post("/api/custom/recharge/webhooks/cancelled", async (req, res) => {
+    console.log('Recharge cancelled webhook successfully called.');
+
+    // Create data object to send to SimonData
+    var data = {
+      "partnerId": simonDataPartnerId,
+      "partnerSecret": simonDataPartnerSecret,
+      "type": "track",
+      "event": "custom",
+      "clientId": "test123456abcdef",
+      // "timezone": new Date(body.created_at).getTimezoneOffset(),
+      // "sentAt": new Date(body.created_at).valueOf(),
+      "properties": {
+           "eventName": "subscription_cancelled",
+           "requiresIdentity": false
+      },
+      "traits": {
+        // "email": req.body.email,
+        // "productID": req.body.variant
+      }
+    }
+
+    return false;
+    
+    // Axios POST request to SimonData Event Ingestion API
+    const result = await axiosToSimonData(data);
+
+    if (result) {
+      res.status(200).send({
+        "result": "success"
+      });
+    } else {
+      res.status(500).send({
+        "result": "failed"
+      });
+    }
 
   });
 
@@ -707,13 +746,7 @@ export async function createServer(
       'checkouts/create',
       'orders/paid',
       'orders/fulfilled',
-      // 'orders/updated',
       'refunds/create'
-    ]
-    
-    const rechargeWebhooks = [
-      'subscription/created',
-      'subscription/cancelled'
     ]
 
     if (session) {
@@ -734,32 +767,6 @@ export async function createServer(
           console.log(`Webhook for ${webhook.topic} succesfully created.`);
         } catch (err) {
           console.log(err);   
-        }
-      })
-
-      rechargeWebhooks.forEach(async hook => {
-
-        const data = {
-          "address": `${process.env.HOST_NAME}/api/custom/recharge/webhooks`,
-          "topic": hook,
-          "included_objects": ["customer"]
-        }
-
-        try {
-          const result = await axios.post('https://api.rechargeapps.com/webhooks', data, {
-            headers: {
-              'X-Recharge-Access-Token': 'sk_1x1_7c97b258eaa1f7d5f216f064e94d7e62a3eea4f38d5809d6a15e0a5d3e937833',
-              'Content-Type': 'application/json'
-            }
-          }) 
-          .then((response) => {
-            console.log(`Recharge webhook for - succesfully created.`, response);
-          })
-          .catch((error) => {
-            console.log('Recharge error: ', error); 
-          })
-        } catch (err) {
-          console.log(err);  
         }
       })
 
@@ -805,6 +812,37 @@ export async function createServer(
   }
 
   app.use("/api/*", async (req, res, next) => {
+
+    if (typeof req.query.shop !== "string") {
+      res.status(500);
+      return res.send("No shop provided");
+    }
+
+    const shop = Shopify.Utils.sanitizeShop(req.query.shop);
+    const appInstalled = await AppInstallations.includes(shop);
+
+    if (!appInstalled) {
+      return redirectToAuth(req, res, app);
+    }
+
+    if (Shopify.Context.IS_EMBEDDED_APP && req.query.embedded !== "1") {
+      const embeddedUrl = Shopify.Utils.getEmbeddedAppUrl(req);
+
+      return res.redirect(embeddedUrl + req.path);
+    }
+
+    const htmlFile = join(
+      isProd ? PROD_INDEX_PATH : DEV_INDEX_PATH,
+      "index.html"
+    );
+
+    return res
+      .status(200)
+      .set("Content-Type", "text/html")
+      .send(readFileSync(htmlFile));
+  });
+
+  app.use("/", async (req, res, next) => {
 
     if (typeof req.query.shop !== "string") {
       res.status(500);
