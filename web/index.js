@@ -13,8 +13,6 @@ import redirectToAuth from "./helpers/redirect-to-auth.js";
 import { BillingInterval } from "./helpers/ensure-billing.js";
 import { AppInstallations } from "./app_installations.js";
 
-import customRoutes from './routes/custom.js';
-
 import axios from 'axios';
 
 const USE_ONLINE_TOKENS = false;
@@ -39,50 +37,11 @@ const axiosHeaders = {
 
 // export for test use only
 const anonApp = express();
+anonApp.use(express.json());
 
-anonApp.post("/custom-api/back-in-stock", async (req, res) => {
-  console.log('Custom route called');
+const customRoutes = require('./routes/custom');
 
-  // Create data object to send to SimonData
-  var data = {
-    "partnerId": simonDataPartnerId,
-    "partnerSecret": simonDataPartnerSecret,
-    "type": "track",
-    "event": "custom",
-    "clientId": "test123456abcdef",
-    // "timezone": new Date(body.created_at).getTimezoneOffset(),
-    // "sentAt": new Date(body.created_at).valueOf(),
-    "properties": {
-         "eventName": "back_in_stock",
-         "requiresIdentity": false
-    },
-    "traits": {
-      "email": req.query.email,
-      "productID": req.query.productID
-    }
-  }
-  
-  res.status(200).send({
-    "result": data
-  });
-
-  return false;
-
-  
-  // Axios POST request to SimonData Event Ingestion API
-  const result = await axiosToSimonData(data);
-
-  if (result) {
-    res.status(200).send({
-      "result": "success"
-    });
-  } else {
-    res.status(500).send({
-      "result": "failed"
-    });
-  }
-
-});
+anonApp.use('/custom-api', customRoutes);
 
 function notFound(req, res, next) {
   res.status(404);
