@@ -420,29 +420,29 @@ export async function createServer(
 ) {
   const app = express();
 
-  app.get("/api/back-in-stock", async (req, res) => {
+  app.post("/api/back-in-stock", async (req, res) => {
 
     // Create data object to send to SimonData
-    var data = {
-      "partnerId": simonDataPartnerId,
-      "partnerSecret": simonDataPartnerSecret,
-      "type": "track",
-      "event": "custom",
-      "clientId": "test123456abcdef",
-      // "timezone": new Date(body.created_at).getTimezoneOffset(),
-      // "sentAt": new Date(body.created_at).valueOf(),
-      "properties": {
-           "eventName": "back_in_stock",
-           "requiresIdentity": false
-      },
-      "traits": {
-        "email": req.query.email,
-        "productID": req.query.productID
-      }
-    }
+    // var data = {
+    //   "partnerId": simonDataPartnerId,
+    //   "partnerSecret": simonDataPartnerSecret,
+    //   "type": "track",
+    //   "event": "custom",
+    //   "clientId": "test123456abcdef",
+    //   // "timezone": new Date(body.created_at).getTimezoneOffset(),
+    //   // "sentAt": new Date(body.created_at).valueOf(),
+    //   "properties": {
+    //        "eventName": "back_in_stock",
+    //        "requiresIdentity": false
+    //   },
+    //   "traits": {
+    //     "email": req.body.email,
+    //     "productID": req.body.productID
+    //   }
+    // }
     
     res.status(200).send({
-      "result": data
+      "result": req.body
     });
 
     return false;
