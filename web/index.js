@@ -757,7 +757,7 @@ export async function createServer(
     app.use(serveStatic(PROD_INDEX_PATH, { index: false }));
   }
 
-  app.use("/*", async (req, res, next) => {
+  app.use("/api/*", async (req, res, next) => {
 
     if (typeof req.query.shop !== "string") {
       res.status(500);
