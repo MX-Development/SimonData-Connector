@@ -424,6 +424,8 @@ export async function createServer(
 
   app.post("/api/back-in-stock", async (req, res) => {
 
+    console.log('Body: ', req.body);
+
     // Create data object to send to SimonData
     var data = {
       "partnerId": simonDataPartnerId,
@@ -442,11 +444,6 @@ export async function createServer(
         "productID": req.body.variant
       }
     }
-    
-    res.status(200)
-    .send(data);
-
-    return false;
     
     // Axios POST request to SimonData Event Ingestion API
     const result = await axiosToSimonData(data);
