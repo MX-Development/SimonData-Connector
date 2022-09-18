@@ -449,8 +449,6 @@ export async function createServer(
           "customerId": req.body.customerId ? req.body.customerId : ''
       }
     }
-
-    console.log('Sending product viewed: ', data);
     
     // Axios POST request to SimonData Event Ingestion API
     const result = await axiosToSimonData(data);
@@ -528,7 +526,7 @@ export async function createServer(
         "result": "success"
       });
     } else {
-      res.status(500).send({
+      res.status(200).send({
         "result": "failed"
       });
     }
