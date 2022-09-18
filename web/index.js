@@ -492,7 +492,7 @@ export async function createServer(
         "result": "success"
       });
     } else {
-      res.status(500).send({
+      res.status(200).send({
         "result": "failed"
       });
     }
