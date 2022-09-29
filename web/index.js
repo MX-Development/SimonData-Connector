@@ -51,7 +51,6 @@ Shopify.Context.initialize({
 console.log('SimonData Connector active on URL: ', process.env.HOST);
 
 const axiosToSimonData = async (data) => {
-  return false;
   try {
     const result = await axios.post(simonDataUrl, data, {
       headers: axiosHeaders
