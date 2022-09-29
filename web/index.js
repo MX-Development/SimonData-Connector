@@ -56,7 +56,7 @@ const axiosToSimonData = async (data) => {
       headers: axiosHeaders
     }) 
     .then((response) => {
-      console.log('SimonData response: ', response);
+      // console.log('SimonData response: ', response);
       return response;
     })
     .catch((error) => {
