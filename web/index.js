@@ -188,24 +188,9 @@ Shopify.Webhooks.Registry.addHandler("CUSTOMERS_CREATE", {
         "name": body.first_name + ' ' + body.last_name
       }
     }
-
-    let sess = new SessionModel();
-    sess.customer_id = '123456';
-
-    sess.save()
-    .then(sess => {
-        res.status(200).json({
-          'sess': 'sess added successfully',
-          'customer_id': sess.customer_id
-        }
-      );
-    })
-    .catch(err => {
-        res.status(400).send('adding new sess failed');
-    });
     
     // Axios POST request to SimonData Event Ingestion API
-    // axiosToSimonData(data);
+    axiosToSimonData(data);
 
   }
 });
@@ -505,6 +490,24 @@ export async function createServer(
   });
 
   app.post("/api/custom/simon-data/product-viewed", async (req, res) => {
+
+    const test = {
+      "session_id": "1234",
+      "cart_token": "1234",
+      "customer_id": "1234"
+    }
+
+    let sess = new SessionModel(test);
+
+    sess.save()
+    .then(sess => {
+      console.log('Session added to db: ', sess);
+    })
+    .catch(err => {
+      console.log('Session added to db failed: ', err);
+    });
+
+    return false;
 
     // Create data object to send to SimonData
     var data = {
