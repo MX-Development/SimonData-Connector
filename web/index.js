@@ -569,11 +569,6 @@ export async function createServer(
     }
 
     console.log('Add to cart cart route.');
-    res.status(200).send({
-      "data_to_simon": data
-    });
-    
-    return false;
     
     // Axios POST request to SimonData Event Ingestion API
     const result = await axiosToSimonData(data);
@@ -609,11 +604,6 @@ export async function createServer(
     }
 
     console.log('Update cart route.');
-    res.status(200).send({
-      "data_to_simon": data
-    });
-    
-    return false;
     
     // Axios POST request to SimonData Event Ingestion API
     const result = await axiosToSimonData(data);
@@ -648,11 +638,6 @@ export async function createServer(
     }
 
     console.log('Remove from cart route.');
-    res.status(200).send({
-      "data_to_simon": data
-    });
-    
-    return false;
     
     // Axios POST request to SimonData Event Ingestion API
     const result = await axiosToSimonData(data);
