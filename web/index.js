@@ -27,8 +27,7 @@ if (process.env.CA_CERT) {
 }
 mongoose.connect(process.env.DATABASE_URL, {
   useNewUrlParser: true,
-  useUnifiedTopology: true,
-  tlsCAFile: mongoCertPath
+  useUnifiedTopology: true
 });
 const connection = mongoose.connection;
 connection.once('open', function() {
