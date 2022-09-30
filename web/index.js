@@ -477,7 +477,7 @@ export async function createServer(
       "properties": {
         "productId": req.body.product.product_id, 
         "variant": req.body.product.id, 
-        "quantity": req.body.product.quantity
+        "quantity": req.body.quantity
       }
     }
 
