@@ -1,4 +1,5 @@
 // @ts-check
+import mongoose from "mongoose"
 import { join } from "path";
 import { readFileSync } from "fs";
 import express from "express";
@@ -12,9 +13,6 @@ import productCreator from "./helpers/product-creator.js";
 import redirectToAuth from "./helpers/redirect-to-auth.js";
 import { BillingInterval } from "./helpers/ensure-billing.js";
 import { AppInstallations } from "./app_installations.js";
-
-import mongoose from 'mongoose';
-import path from 'path';
 
 import customRoutes from './routes/custom.js';
 
