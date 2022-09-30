@@ -481,10 +481,9 @@ export async function createServer(
       }
     }
 
-    console.log('Add to cart route.', req.body);
-
+    console.log('Add to cart cart route.');
     res.status(200).send({
-      "body": req.body
+      "data_to_simon": data
     });
     
     return false;
@@ -515,16 +514,19 @@ export async function createServer(
       "clientId": "test123456abcdef",
       "sentAt": new Date().valueOf(),
       "properties": {
-        "quantity": req.body.product.quantity,
-        "previousQuantity": req.body.product.prevQuantity,
+        "quantity": req.body.quantity,
+        "previousQuantity": req.body.prevQuantity,
         "productId": req.body.product.product_id,
         "variant": req.body.product.id,
         "productName": req.body.product.title,
-        "price": req.body.product.price
-      }
+        "price": (req.body.product.price / 100).toFixed(2)
+       }
     }
 
-    console.log('Add to cart route.', req.body);
+    console.log('Update cart route.');
+    res.status(200).send({
+      "data_to_simon": data
+    });
     
     return false;
     
@@ -560,7 +562,10 @@ export async function createServer(
       }
     }
 
-    console.log('Add to cart route.', req.body);
+    console.log('Remove from cart route.');
+    res.status(200).send({
+      "data_to_simon": data
+    });
     
     return false;
     
