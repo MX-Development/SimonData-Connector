@@ -20,7 +20,7 @@ import customRoutes from './routes/custom.js';
 
 import axios from 'axios';
 
-import * as SessionModel from './models/Session';
+import SessionModel from './models/Session.js';
  
 // MongoDB Database using Mongoose
 const filenameToCreate = 'ca-certificate.crt';
@@ -189,7 +189,7 @@ Shopify.Webhooks.Registry.addHandler("CUSTOMERS_CREATE", {
       }
     }
 
-    let sess = new SessionModel(req.body);
+    let sess = new SessionModel();
     sess.customer_id = '123456';
 
     sess.save()

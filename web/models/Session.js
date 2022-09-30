@@ -12,4 +12,4 @@ let Session = new Schema({
     }
 });
 
-module.exports = mongoose.model('Session', Session);
+export default mongoose.model('Session', Session);
