@@ -16,6 +16,10 @@ logs
 
 # ngrok tunnel file
 config/tunnel.pid
+web/config
+web/config/boisson-ca-certificate.crt
+
+events-to-track.txt
 
 # vite build output
 dist/

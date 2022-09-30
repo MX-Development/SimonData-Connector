@@ -13,9 +13,27 @@ import redirectToAuth from "./helpers/redirect-to-auth.js";
 import { BillingInterval } from "./helpers/ensure-billing.js";
 import { AppInstallations } from "./app_installations.js";
 
+import mongoose from 'mongoose';
+import path from 'path';
+
 import customRoutes from './routes/custom.js';
 
 import axios from 'axios';
+
+// MongoDB Database using Mongoose
+// let mongoCertPath = path.resolve("./config/boisson-ca-certificate.crt");
+if (process.env.CA_CERT) {
+  fs.writeFileSync(mongoCertPath, process.env.CA_CERT);
+}
+mongoose.connect(process.env.MONGO_URL, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  tlsCAFile: mongoCertPath
+});
+const connection = mongoose.connection;
+connection.once('open', function() {
+    console.log("MongoDB database connection established successfully");
+})
 
 const USE_ONLINE_TOKENS = false;
 
@@ -72,6 +90,9 @@ const axiosToSimonData = async (data) => {
 }
 
 const sendOrderedProducts = (body, products) => {
+
+  console.log(`Cart token for Ordered_Products custom event: `, body.cart_token);
+
   products.forEach(product => {
 
     // Create data object to send to SimonData

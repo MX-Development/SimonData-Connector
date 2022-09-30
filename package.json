@@ -13,7 +13,9 @@
   },
   "dependencies": {
     "@shopify/app": "3.9.2",
-    "@shopify/cli": "3.9.2"
+    "@shopify/cli": "3.9.2",
+    "dotenv": "^16.0.3",
+    "mongoose": "^6.6.2"
   },
   "author": "mikeh"
 }
