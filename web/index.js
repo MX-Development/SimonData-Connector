@@ -482,6 +482,10 @@ export async function createServer(
     }
 
     console.log('Add to cart route.', req.body);
+
+    res.status(200).send({
+      "body": req.body
+    });
     
     return false;
     
