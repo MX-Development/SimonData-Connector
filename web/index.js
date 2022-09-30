@@ -21,13 +21,14 @@ import customRoutes from './routes/custom.js';
 import axios from 'axios';
 
 // MongoDB Database using Mongoose
-let mongoCertPath = path.resolve("./config/boisson-ca-certificate.crt");
-if (process.env.CA_CERT) {
-  fs.writeFileSync(mongoCertPath, process.env.CA_CERT);
-}
+// let mongoCertPath = path.resolve("./config/boisson-ca-certificate.crt");
+// if (process.env.CA_CERT) {
+//   fs.writeFileSync(mongoCertPath, process.env.CA_CERT);
+// }
 mongoose.connect(process.env.DATABASE_URL, {
   useNewUrlParser: true,
-  useUnifiedTopology: true
+  useUnifiedTopology: true,
+  tlsCAFile: process.env.CA_CERT
 });
 const connection = mongoose.connection;
 connection.once('open', function() {
