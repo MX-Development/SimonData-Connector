@@ -180,6 +180,8 @@ Shopify.Webhooks.Registry.addHandler("CHECKOUTS_CREATE", {
     // Parse the body string to a JSON object 
     const body = JSON.parse(_body);
 
+    console.log(`Cart token for CHECKOUTS_CREATE: `, body.cart_token);
+
     // Create data object to send to SimonData
     var data = {
       "partnerId": simonDataPartnerId,
@@ -216,6 +218,8 @@ Shopify.Webhooks.Registry.addHandler("ORDERS_PAID", {
 
     // Parse the body string to a JSON object
     const body = JSON.parse(_body);
+
+    console.log(`Cart token for ORDERS_PAID: `, body.cart_token);
 
     const lineItems = [];
     (body.line_items).forEach(item => {
@@ -273,6 +277,8 @@ Shopify.Webhooks.Registry.addHandler("ORDERS_FULFILLED", {
     // Parse the body string to a JSON object
     const body = JSON.parse(_body);
 
+    console.log(`Cart token for ORDERS_FULFILLED: `, body.cart_token);
+
     const lineItems = [];
     (body.line_items).forEach(item => {
       const product = {
@@ -323,6 +329,8 @@ Shopify.Webhooks.Registry.addHandler("REFUNDS_CREATE", {
 
     // Parse the body string to a JSON object
     const body = JSON.parse(_body);
+
+    console.log(`Cart token for REFUNDS_CREATE: `, body.cart_token);
 
     const lineItems = [];
     (body.refund_line_items).forEach(item => {
@@ -517,9 +525,7 @@ export async function createServer(
         "quantity": req.body.quantity,
         "previousQuantity": req.body.prevQuantity,
         "productId": req.body.product.product_id,
-        "variant": req.body.product.id,
-        "productName": req.body.product.title,
-        "price": (req.body.product.price / 100).toFixed(2)
+        "variant": req.body.product.id
        }
     }
 
