@@ -372,6 +372,32 @@ Shopify.Webhooks.Registry.addHandler("REFUNDS_CREATE", {
   }
 });
 
+Shopify.Webhooks.Registry.addHandler("CARTS_CREATE", {
+  path: "/api/webhooks",
+  webhookHandler: async (_topic, shop, _body) => {
+    // Check if handler has fired
+    console.log(`Handler topic: `, _topic);
+
+    // Parse the body string to a JSON object
+    const body = JSON.parse(_body);
+
+    console.log(`Cart token for CARTS_CREATE: `, body.cart_token);
+  }
+});
+
+Shopify.Webhooks.Registry.addHandler("CARTS_UPDATE", {
+  path: "/api/webhooks",
+  webhookHandler: async (_topic, shop, _body) => {
+    // Check if handler has fired
+    console.log(`Handler topic: `, _topic);
+
+    // Parse the body string to a JSON object
+    const body = JSON.parse(_body);
+
+    console.log(`Cart token for CARTS_UPDATE: `, body.cart_token);
+  }
+});
+
 // The transactions with Shopify will always be marked as test transactions, unless NODE_ENV is production.
 // See the ensureBilling helper to learn more about billing in this template.
 const BILLING_SETTINGS = {
@@ -858,7 +884,9 @@ export async function createServer(
       'checkouts/create',
       'orders/paid',
       'orders/fulfilled',
-      'refunds/create'
+      'refunds/create',
+      'carts/create',
+      'carts/update'
     ]
 
     if (session) {
