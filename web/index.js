@@ -982,6 +982,37 @@ export async function createServer(
       .send(readFileSync(htmlFile));
   });
 
+  app.use("/auth/*", async (req, res, next) => {
+
+    if (typeof req.query.shop !== "string") {
+      res.status(500);
+      return res.send("No shop provided");
+    }
+
+    const shop = Shopify.Utils.sanitizeShop(req.query.shop);
+    const appInstalled = await AppInstallations.includes(shop);
+
+    if (!appInstalled) {
+      return redirectToAuth(req, res, app);
+    }
+
+    if (Shopify.Context.IS_EMBEDDED_APP && req.query.embedded !== "1") {
+      const embeddedUrl = Shopify.Utils.getEmbeddedAppUrl(req);
+
+      return res.redirect(embeddedUrl + req.path);
+    }
+
+    const htmlFile = join(
+      isProd ? PROD_INDEX_PATH : DEV_INDEX_PATH,
+      "index.html"
+    );
+
+    return res
+      .status(200)
+      .set("Content-Type", "text/html")
+      .send(readFileSync(htmlFile));
+  });
+
   app.use("/", async (req, res, next) => {
 
     if (typeof req.query.shop !== "string") {
