@@ -71,6 +71,17 @@ Shopify.Context.initialize({
 
 console.log('SimonData Connector active on URL: ', process.env.HOST);
 
+function generateId(length) {
+  var result           = '';
+  var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  var charactersLength = characters.length;
+  for ( var i = 0; i < length; i++ ) {
+    result += characters.charAt(Math.floor(Math.random() * 
+charactersLength));
+ }
+ return result;
+}
+
 const axiosToSimonData = async (data) => {
   try {
     const result = await axios.post(simonDataUrl, data, {
@@ -212,7 +223,7 @@ Shopify.Webhooks.Registry.addHandler("CHECKOUTS_CREATE", {
       "partnerSecret": simonDataPartnerSecret,
       "type": "track",
       "event": "custom",
-      "clientId": "test123456abcdef",
+      "clientId": body.cart_token ? body.cart_token : generateId(10),
       "timezone": new Date(body.created_at).getTimezoneOffset(),
       "sentAt": new Date(body.created_at).valueOf(),
       "properties": {
@@ -269,7 +280,7 @@ Shopify.Webhooks.Registry.addHandler("ORDERS_PAID", {
       "partnerSecret": simonDataPartnerSecret,
       "type": "track",
       "event": "complete_transaction",
-      "clientId": "test123456abcdef",
+      "clientId": body.cart_token ? body.cart_token : generateId(10),
       "ipAddress": body.browser_ip,
       "timezone": new Date(body.created_at).getTimezoneOffset(),
       "sentAt": new Date(body.created_at).valueOf(),
@@ -321,7 +332,7 @@ Shopify.Webhooks.Registry.addHandler("ORDERS_FULFILLED", {
       "partnerSecret": simonDataPartnerSecret,
       "type": "track",
       "event": "custom",
-      "clientId": "test123456abcdef",
+      "clientId": body.cart_token ? body.cart_token : generateId(10),
       "timezone": new Date(body.created_at).getTimezoneOffset(),
       "sentAt": new Date(body.created_at).valueOf(),
       "properties": {
@@ -374,7 +385,7 @@ Shopify.Webhooks.Registry.addHandler("REFUNDS_CREATE", {
       "partnerSecret": simonDataPartnerSecret,
       "type": "track",
       "event": "custom",
-      "clientId": "test123456abcdef",
+      "clientId": body.cart_token ? body.cart_token : generateId(10),
       "timezone": new Date(body.created_at).getTimezoneOffset(),
       "sentAt": new Date(body.created_at).valueOf(),
       "properties": {
@@ -461,7 +472,7 @@ export async function createServer(
       "partnerSecret": simonDataPartnerSecret,
       "type": "track",
       "event": "custom",
-      "clientId": "test123456abcdef",
+      "clientId": generateId(10),
       // "timezone": new Date(body.created_at).getTimezoneOffset(),
       // "sentAt": new Date(body.created_at).valueOf(),
       "properties": {
@@ -491,23 +502,23 @@ export async function createServer(
 
   app.post("/api/custom/simon-data/product-viewed", async (req, res) => {
 
-    const test = {
-      "session_id": "1234",
-      "cart_token": "1234",
-      "customer_id": "1234"
-    }
+    // const test = {
+    //   "session_id": "1234",
+    //   "cart_token": "1234",
+    //   "customer_id": "1234"
+    // }
 
-    let sess = new SessionModel(test);
+    // let sess = new SessionModel(test);
 
-    sess.save()
-    .then(sess => {
-      console.log('Session added to db: ', sess);
-    })
-    .catch(err => {
-      console.log('Session added to db failed: ', err);
-    });
+    // sess.save()
+    // .then(sess => {
+    //   console.log('Session added to db: ', sess);
+    // })
+    // .catch(err => {
+    //   console.log('Session added to db failed: ', err);
+    // });
 
-    return false;
+    // return false;
 
     // Create data object to send to SimonData
     var data = {
@@ -515,7 +526,7 @@ export async function createServer(
       "partnerSecret": simonDataPartnerSecret,
       "event": "product_view",
       "type": "track",
-      "clientId": "test123456abcdef",
+      "clientId": generateId(10),
       "sentAt": new Date().valueOf(),
       "properties": {
           "productId": req.body.productId,
@@ -548,7 +559,7 @@ export async function createServer(
       "partnerSecret": simonDataPartnerSecret,
       "event": "add_to_cart",
       "type": "track",
-      "clientId": "test123456abcdef",
+      "clientId": generateId(10),
       "sentAt": new Date().valueOf(),
       "properties": {
         "productId": req.body.product.product_id, 
@@ -587,7 +598,7 @@ export async function createServer(
       "partnerSecret": simonDataPartnerSecret,
       "event": "update_cart",
       "type": "track",
-      "clientId": "test123456abcdef",
+      "clientId": generateId(10),
       "sentAt": new Date().valueOf(),
       "properties": {
         "quantity": req.body.quantity,
@@ -627,7 +638,7 @@ export async function createServer(
       "partnerSecret": simonDataPartnerSecret,
       "event": "remove_from_cart",
       "type": "track",
-      "clientId": "test123456abcdef",
+      "clientId": generateId(10),
       "sentAt": new Date().valueOf(),
       "properties": {
         "productId": req.body.product.product_id, 
