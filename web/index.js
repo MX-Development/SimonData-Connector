@@ -1,6 +1,7 @@
 // @ts-check
 import mongoose from "mongoose";
 import fs from "fs";
+import path from "path";
 import { join } from "path";
 import { readFileSync } from "fs";
 import express from "express";
@@ -20,7 +21,7 @@ import customRoutes from './routes/custom.js';
 import axios from 'axios';
 
 // MongoDB Database using Mongoose
-// let mongoCertPath = path.resolve("./config/boisson-ca-certificate.crt");
+let mongoCertPath = path.resolve("./config/boisson-ca-certificate.crt");
 if (process.env.CA_CERT) {
   fs.writeFileSync(mongoCertPath, process.env.CA_CERT);
 }
