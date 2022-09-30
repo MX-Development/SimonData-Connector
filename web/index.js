@@ -20,6 +20,8 @@ import customRoutes from './routes/custom.js';
 
 import axios from 'axios';
 
+import * as SessionModel from './models/Session';
+ 
 // MongoDB Database using Mongoose
 const filenameToCreate = 'ca-certificate.crt';
 if (process.env.CA_CERT) {
@@ -186,9 +188,24 @@ Shopify.Webhooks.Registry.addHandler("CUSTOMERS_CREATE", {
         "name": body.first_name + ' ' + body.last_name
       }
     }
+
+    let sess = new SessionModel(req.body);
+    sess.customer_id = '123456';
+
+    sess.save()
+    .then(sess => {
+        res.status(200).json({
+          'sess': 'sess added successfully',
+          'customer_id': sess.customer_id
+        }
+      );
+    })
+    .catch(err => {
+        res.status(400).send('adding new sess failed');
+    });
     
     // Axios POST request to SimonData Event Ingestion API
-    axiosToSimonData(data);
+    // axiosToSimonData(data);
 
   }
 });
