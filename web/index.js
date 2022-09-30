@@ -1,5 +1,6 @@
 // @ts-check
-import mongoose from "mongoose"
+import mongoose from "mongoose";
+import fs from "fs";
 import { join } from "path";
 import { readFileSync } from "fs";
 import express from "express";
