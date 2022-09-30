@@ -464,6 +464,117 @@ export async function createServer(
 
   });
 
+  app.post("/api/custom/simon-data/add-to-cart", async (req, res) => {
+
+    // Create data object to send to SimonData
+    var data = {
+      "partnerId": simonDataPartnerId,
+      "partnerSecret": simonDataPartnerSecret,
+      "event": "add_to_cart",
+      "type": "track",
+      "clientId": "test123456abcdef",
+      "sentAt": new Date().valueOf(),
+      "properties": {
+        "productId": req.body.product.product_id, 
+        "variant": req.body.product.id, 
+        "quantity": req.body.product.quantity
+      }
+    }
+
+    console.log('Add to cart route.', req.body);
+    
+    return false;
+    
+    // Axios POST request to SimonData Event Ingestion API
+    const result = await axiosToSimonData(data);
+
+    if (result) {
+      res.status(200).send({
+        "result": "success"
+      });
+    } else {
+      res.status(500).send({
+        "result": "failed"
+      });
+    }
+
+  });
+
+  app.post("/api/custom/simon-data/update-cart", async (req, res) => {
+
+    // Create data object to send to SimonData
+    var data = {
+      "partnerId": simonDataPartnerId,
+      "partnerSecret": simonDataPartnerSecret,
+      "event": "update_cart",
+      "type": "track",
+      "clientId": "test123456abcdef",
+      "sentAt": new Date().valueOf(),
+      "properties": {
+        "quantity": req.body.product.quantity,
+        "previousQuantity": req.body.product.prevQuantity,
+        "productId": req.body.product.product_id,
+        "variant": req.body.product.id,
+        "productName": req.body.product.title,
+        "price": req.body.product.price
+      }
+    }
+
+    console.log('Add to cart route.', req.body);
+    
+    return false;
+    
+    // Axios POST request to SimonData Event Ingestion API
+    const result = await axiosToSimonData(data);
+
+    if (result) {
+      res.status(200).send({
+        "result": "success"
+      });
+    } else {
+      res.status(500).send({
+        "result": "failed"
+      });
+    }
+
+  });
+
+  app.post("/api/custom/simon-data/remove-from-cart", async (req, res) => {
+
+    // Create data object to send to SimonData
+    var data = {
+      "partnerId": simonDataPartnerId,
+      "partnerSecret": simonDataPartnerSecret,
+      "event": "remove_from_cart",
+      "type": "track",
+      "clientId": "test123456abcdef",
+      "sentAt": new Date().valueOf(),
+      "properties": {
+        "productId": req.body.product.product_id, 
+        "variant": req.body.product.id, 
+        "quantity": req.body.product.quantity
+      }
+    }
+
+    console.log('Add to cart route.', req.body);
+    
+    return false;
+    
+    // Axios POST request to SimonData Event Ingestion API
+    const result = await axiosToSimonData(data);
+
+    if (result) {
+      res.status(200).send({
+        "result": "success"
+      });
+    } else {
+      res.status(500).send({
+        "result": "failed"
+      });
+    }
+
+  });
+
   app.post("/api/custom/recharge/webhooks/created", async (req, res) => {
     console.log('Recharge created webhook successfully called.');
 
