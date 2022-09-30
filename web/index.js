@@ -25,7 +25,7 @@ import axios from 'axios';
 if (process.env.CA_CERT) {
   fs.writeFileSync(mongoCertPath, process.env.CA_CERT);
 }
-mongoose.connect(process.env.MONGO_URL, {
+mongoose.connect(process.env.DATABASE_URL, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
   tlsCAFile: mongoCertPath
