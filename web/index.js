@@ -381,7 +381,7 @@ Shopify.Webhooks.Registry.addHandler("CARTS_CREATE", {
     // Parse the body string to a JSON object
     const body = JSON.parse(_body);
 
-    console.log(`Cart token for CARTS_CREATE: `, body.cart_token);
+    console.log(`Cart token for CARTS_CREATE: `, body.token);
   }
 });
 
@@ -394,7 +394,7 @@ Shopify.Webhooks.Registry.addHandler("CARTS_UPDATE", {
     // Parse the body string to a JSON object
     const body = JSON.parse(_body);
 
-    console.log(`Cart token for CARTS_UPDATE: `, body.cart_token);
+    console.log(`Cart token for CARTS_UPDATE: `, body.token);
   }
 });
 
