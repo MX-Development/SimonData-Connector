@@ -653,23 +653,24 @@ export async function createServer(
 
   app.post("/api/custom/simon-data/product-viewed", async (req, res) => {
 
-    // const test = {
-    //   "session_id": "1234",
-    //   "cart_token": "1234",
-    //   "customer_id": "1234"
-    // }
+    let clientId;
 
-    // let sess = new SessionModel(test);
-
-    // sess.save()
-    // .then(sess => {
-    //   console.log('Session added to db: ', sess);
-    // })
-    // .catch(err => {
-    //   console.log('Session added to db failed: ', err);
-    // });
-
-    // return false;
+    if (req.body.cart_token) {
+      // Find sessionID - else create new in database
+      let session = await findBySessionToken(req.body.cart_token);
+  
+      if (session) {
+        clientId = session.session_id;  
+      } else {
+        session = await addSessionToken(req.body.cart_token);
+  
+        if (session) {
+          clientId = session.session_id;
+        }
+      }
+    } else {
+      clientId = `sid_${generateId(15)}`;
+    }
 
     // Create data object to send to SimonData
     var data = {
@@ -677,7 +678,7 @@ export async function createServer(
       "partnerSecret": simonDataPartnerSecret,
       "event": "product_view",
       "type": "track",
-      "clientId": generateId(10),
+      "clientId": clientId,
       "sentAt": new Date().valueOf(),
       "properties": {
           "productId": req.body.productId,
@@ -704,13 +705,32 @@ export async function createServer(
 
   app.post("/api/custom/simon-data/add-to-cart", async (req, res) => {
 
+    let clientId;
+
+    if (req.body.cart_token) {
+      // Find sessionID - else create new in database
+      let session = await findBySessionToken(req.body.cart_token);
+  
+      if (session) {
+        clientId = session.session_id;  
+      } else {
+        session = await addSessionToken(req.body.cart_token);
+  
+        if (session) {
+          clientId = session.session_id;
+        }
+      }
+    } else {
+      clientId = `sid_${generateId(15)}`;
+    }
+
     // Create data object to send to SimonData
     var data = {
       "partnerId": simonDataPartnerId,
       "partnerSecret": simonDataPartnerSecret,
       "event": "add_to_cart",
       "type": "track",
-      "clientId": generateId(10),
+      "clientId": clientId,
       "sentAt": new Date().valueOf(),
       "properties": {
         "productId": req.body.product.product_id, 
@@ -738,13 +758,32 @@ export async function createServer(
 
   app.post("/api/custom/simon-data/update-cart", async (req, res) => {
 
+    let clientId;
+
+    if (req.body.cart_token) {
+      // Find sessionID - else create new in database
+      let session = await findBySessionToken(req.body.cart_token);
+  
+      if (session) {
+        clientId = session.session_id;  
+      } else {
+        session = await addSessionToken(req.body.cart_token);
+  
+        if (session) {
+          clientId = session.session_id;
+        }
+      }
+    } else {
+      clientId = `sid_${generateId(15)}`;
+    }
+
     // Create data object to send to SimonData
     var data = {
       "partnerId": simonDataPartnerId,
       "partnerSecret": simonDataPartnerSecret,
       "event": "update_cart",
       "type": "track",
-      "clientId": generateId(10),
+      "clientId": clientId,
       "sentAt": new Date().valueOf(),
       "properties": {
         "quantity": req.body.quantity,
@@ -773,13 +812,32 @@ export async function createServer(
 
   app.post("/api/custom/simon-data/remove-from-cart", async (req, res) => {
 
+    let clientId;
+
+    if (req.body.cart_token) {
+      // Find sessionID - else create new in database
+      let session = await findBySessionToken(req.body.cart_token);
+  
+      if (session) {
+        clientId = session.session_id;  
+      } else {
+        session = await addSessionToken(req.body.cart_token);
+  
+        if (session) {
+          clientId = session.session_id;
+        }
+      }
+    } else {
+      clientId = `sid_${generateId(15)}`;
+    }
+
     // Create data object to send to SimonData
     var data = {
       "partnerId": simonDataPartnerId,
       "partnerSecret": simonDataPartnerSecret,
       "event": "remove_from_cart",
       "type": "track",
-      "clientId": generateId(10),
+      "clientId": clientId,
       "sentAt": new Date().valueOf(),
       "properties": {
         "productId": req.body.product.product_id, 
