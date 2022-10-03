@@ -24,6 +24,7 @@ import SessionModel from './models/Session.js';
  
 // MongoDB Database using Mongoose
 // const filenameToCreate = './config/ca-certificate.crt';
+const filenameToCreate = 'ca-certificate.crt';
 if (process.env.CA_CERT) {
   fs.writeFileSync(filenameToCreate, process.env.CA_CERT);
 }
