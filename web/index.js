@@ -23,7 +23,7 @@ import axios from 'axios';
 import SessionModel from './models/Session.js';
  
 // MongoDB Database using Mongoose
-const filenameToCreate = 'ca-certificate.crt';
+const filenameToCreate = './config/ca-certificate.crt';
 if (process.env.CA_CERT) {
   fs.writeFileSync(filenameToCreate, process.env.CA_CERT);
 }
@@ -82,6 +82,93 @@ charactersLength));
  return result;
 }
 
+async function addSessionToken(token) {
+
+  try {
+    const data = {
+      "session_id": `sid_${generateId(15)}`,
+      "cart_token": token
+    }
+  
+    let sess = new SessionModel(data);
+  
+    const session = await sess.save()
+
+    return session;
+
+  } catch(err) {
+    console.log("Error: ", err);
+    return false;
+  }
+
+}
+
+async function findBySessionToken(token) {
+
+  try {
+    const session = await SessionModel.findOne({
+      "cart_token": token
+    });
+
+    return session;
+
+  } catch(err) {
+    console.log("Error: ", err);
+    return false;
+  }
+
+}
+
+async function findSessionByCustomerId(id) {
+
+  try {
+    const session = await SessionModel.findOne({
+      "customer_id": id
+    });
+
+    return session;
+
+  } catch(err) {
+    console.log("Error: ", err);
+    return false;
+  }
+
+}
+
+async function findSessionByOrderId(id) {
+
+  try {
+    const session = await SessionModel.findOne({
+      "order_id": id
+    });
+
+    return session;
+
+  } catch(err) {
+    console.log("Error: ", err);
+    return false;
+  }
+
+}
+
+async function updateSessionToken(token, data) {
+
+  const update = data;
+
+  try {
+    const session = await SessionModel.findOneAndUpdate({
+      "cart_token": token
+    }, update);
+
+    console.log('Session successfully updates: ', session);
+    return session;
+
+  } catch(err) {
+    console.log("Error updating session: ", err);
+    return false;
+  }
+}
+
 const axiosToSimonData = async (data) => {
   try {
     const result = await axios.post(simonDataUrl, data, {
@@ -103,7 +190,7 @@ const axiosToSimonData = async (data) => {
   }
 }
 
-const sendOrderedProducts = (body, products) => {
+const sendOrderedProducts = (body, products, clientId) => {
 
   console.log(`Cart token for Ordered_Products custom event: `, body.cart_token);
 
@@ -115,7 +202,7 @@ const sendOrderedProducts = (body, products) => {
       "partnerSecret": simonDataPartnerSecret,
       "type": "track",
       "event": "custom",
-      "clientId": "test123456abcdef",
+      "clientId": clientId,
       "timezone": new Date(body.created_at).getTimezoneOffset(),
       "sentAt": new Date(body.created_at).valueOf(),
       "properties": {
@@ -133,7 +220,7 @@ const sendOrderedProducts = (body, products) => {
   })
 }
 
-const sendRevenue = (body) => {
+const sendRevenue = (body, clientId) => {
 
   // Create data object to send to SimonData
   var data = {
@@ -141,7 +228,7 @@ const sendRevenue = (body) => {
     "partnerSecret": simonDataPartnerSecret,
     "type": "track",
     "event": "custom",
-    "clientId": "test123456abcdef",
+    "clientId": body.cart_token ? body.cart_token : generateId(10),
     "timezone": new Date(body.created_at).getTimezoneOffset(),
     "sentAt": new Date(body.created_at).valueOf(),
     "properties": {
@@ -179,7 +266,16 @@ Shopify.Webhooks.Registry.addHandler("CUSTOMERS_CREATE", {
     // Parse the body string to a JSON object
     const body = JSON.parse(_body);
 
-    // No IP address: https://community.shopify.com/c/shopify-apis-and-sdks/customers-create-webhook-get-customer-ip/td-p/569982
+    // Find sessionID - else create new in database
+    const session = await findSessionByCustomerId(body.id);
+    let clientId;
+
+    if (session) {
+      console.log('Found token: ', session);
+      clientId = session.session_id;
+    } else {
+      clientId = `sid_${generateId(15)}`;
+    }
 
     // Create data object to send to SimonData
     var data = {
@@ -187,7 +283,7 @@ Shopify.Webhooks.Registry.addHandler("CUSTOMERS_CREATE", {
       "partnerSecret": simonDataPartnerSecret,
       "type": "track",
       "event": "registration",
-      "clientId": "test123456abcdef",
+      "clientId": clientId,
       "timezone": new Date(body.created_at).getTimezoneOffset(),
       "sentAt": new Date(body.created_at).valueOf(),
       "properties": {
@@ -217,13 +313,33 @@ Shopify.Webhooks.Registry.addHandler("CHECKOUTS_CREATE", {
 
     console.log(`Cart token for CHECKOUTS_CREATE: `, body.cart_token);
 
+    let clientId;
+
+    if (body.cart_token) {
+      // Find sessionID - else create new in database
+      let session = await findBySessionToken(body.cart_token);
+  
+      if (session) {
+        clientId = session.session_id;
+  
+      } else {
+        session = await addSessionToken(body.cart_token);
+  
+        if (session) {
+          clientId = session.session_id;
+        }
+      }
+    } else {
+      clientId = `sid_${generateId(15)}`;
+    }
+
     // Create data object to send to SimonData
     var data = {
       "partnerId": simonDataPartnerId,
       "partnerSecret": simonDataPartnerSecret,
       "type": "track",
       "event": "custom",
-      "clientId": body.cart_token ? body.cart_token : generateId(10),
+      "clientId": clientId,
       "timezone": new Date(body.created_at).getTimezoneOffset(),
       "sentAt": new Date(body.created_at).valueOf(),
       "properties": {
@@ -256,6 +372,28 @@ Shopify.Webhooks.Registry.addHandler("ORDERS_PAID", {
 
     console.log(`Cart token for ORDERS_PAID: `, body.cart_token);
 
+    let clientId;
+
+    if (body.cart_token) {
+      // Find sessionID - else create new in database
+      let session = await findBySessionToken(body.cart_token);
+  
+      if (session) {
+        clientId = session.session_id;
+
+        updateSessionToken(body.cart_token, {"order_id": body.id})
+  
+      } else {
+        session = await addSessionToken(body.cart_token);
+  
+        if (session) {
+          clientId = session.session_id;
+        }
+      }
+    } else {
+      clientId = `sid_${generateId(15)}`;
+    }
+
     const lineItems = [];
     (body.line_items).forEach(item => {
       const product = {
@@ -270,9 +408,9 @@ Shopify.Webhooks.Registry.addHandler("ORDERS_PAID", {
       lineItems.push(product);
     })
 
-    sendOrderedProducts(body, lineItems);
+    sendOrderedProducts(body, lineItems, clientId);
 
-    sendRevenue(body);
+    sendRevenue(body, clientId);
 
     // Create data object to send to SimonData
     var data = {
@@ -280,7 +418,7 @@ Shopify.Webhooks.Registry.addHandler("ORDERS_PAID", {
       "partnerSecret": simonDataPartnerSecret,
       "type": "track",
       "event": "complete_transaction",
-      "clientId": body.cart_token ? body.cart_token : generateId(10),
+      "clientId": clientId,
       "ipAddress": body.browser_ip,
       "timezone": new Date(body.created_at).getTimezoneOffset(),
       "sentAt": new Date(body.created_at).valueOf(),
@@ -312,7 +450,12 @@ Shopify.Webhooks.Registry.addHandler("ORDERS_FULFILLED", {
     // Parse the body string to a JSON object
     const body = JSON.parse(_body);
 
-    console.log(`Cart token for ORDERS_FULFILLED: `, body.cart_token);
+    let clientId;
+
+    let session = await findSessionByOrderId(body.id);
+    if (session) {
+      clientId = session.session_id;
+    }
 
     const lineItems = [];
     (body.line_items).forEach(item => {
@@ -332,7 +475,7 @@ Shopify.Webhooks.Registry.addHandler("ORDERS_FULFILLED", {
       "partnerSecret": simonDataPartnerSecret,
       "type": "track",
       "event": "custom",
-      "clientId": body.cart_token ? body.cart_token : generateId(10),
+      "clientId": clientId,
       "timezone": new Date(body.created_at).getTimezoneOffset(),
       "sentAt": new Date(body.created_at).valueOf(),
       "properties": {
@@ -364,6 +507,13 @@ Shopify.Webhooks.Registry.addHandler("REFUNDS_CREATE", {
 
     // Parse the body string to a JSON object
     const body = JSON.parse(_body);
+
+    let clientId;
+
+    let session = await findSessionByOrderId(body.id);
+    if (session) {
+      clientId = session.session_id;
+    }
 
     console.log(`Cart token for REFUNDS_CREATE: `, body.cart_token);
 

@@ -9,6 +9,9 @@ let Session = new Schema({
     },
     customer_id: {
         type: String
+    },
+    order_id: {
+        type: String
     }
 });
 
