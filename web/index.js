@@ -653,6 +653,8 @@ export async function createServer(
 
   app.post("/api/custom/simon-data/product-viewed", async (req, res) => {
 
+    console.log('Product viewed.');
+
     let clientId;
 
     if (req.body.cart_token) {
