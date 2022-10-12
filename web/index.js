@@ -671,6 +671,59 @@ export async function createServer(
 
   });
 
+  app.post("/api/custom/simon-data/identify", async (req, res) => {
+
+    console.log('Identify event: ', req.body);
+
+    let clientId;
+
+    if (req.body.cart_token) {
+      // Find sessionID - else create new in database
+      let session = await findBySessionToken(req.body.cart_token);
+  
+      if (session) {
+        clientId = session.session_id;  
+      } else {
+        session = await addSessionToken(req.body.cart_token);
+  
+        if (session) {
+          clientId = session.session_id;
+        }
+      }
+    } else {
+      clientId = `sid_${generateId(15)}`;
+    }
+
+    // Create data object to send to SimonData
+    var data = {
+      "partnerId": simonDataPartnerId,
+      "partnerSecret": simonDataPartnerSecret,
+      "type": "identify",
+      "clientId": clientId,
+      "traits": {
+        "email": req.body.email,
+        "userId": req.body.id,
+        "firstName": req.body.first_name,
+        "lastName": req.body.last_name,
+        "name": req.body.first_name + ' ' + req.body.last_name
+      }
+    }
+    
+    // Axios POST request to SimonData Event Ingestion API
+    const result = await axiosToSimonData(data);
+
+    if (result) {
+      res.status(200).send({
+        "result": "success"
+      });
+    } else {
+      res.status(500).send({
+        "result": "failed"
+      });
+    }
+
+  });
+
   app.post("/api/custom/simon-data/product-viewed", async (req, res) => {
 
     console.log('Product viewed.', req.body);
