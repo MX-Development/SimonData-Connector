@@ -459,6 +459,26 @@ Shopify.Webhooks.Registry.addHandler("ORDERS_PAID", {
     // Axios POST request to SimonData Event Ingestion API
     axiosToSimonData(data);
 
+    // Create data object to send to SimonData
+    var identifyData = {
+      "partnerId": simonDataPartnerId,
+      "partnerSecret": simonDataPartnerSecret,
+      "type": "identify",
+      "clientId": clientId,
+      "timezone": new Date(body.created_at).getTimezoneOffset(),
+      "sentAt": new Date(body.created_at).valueOf(),
+      "traits": {
+        "email": body.customer.email,
+        "userId": body.customer.id,
+        "firstName": body.customer.first_name,
+        "lastName": body.customer.last_name,
+        "name": body.customer.first_name + ' ' + body.customer.last_name
+      }
+    }
+    
+    // Axios POST request to SimonData Event Ingestion API
+    axiosToSimonData(identifyData);
+
   }
 });
 
