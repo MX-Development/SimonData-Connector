@@ -420,11 +420,11 @@ Shopify.Webhooks.Registry.addHandler("CHECKOUTS_CREATE", {
            "requiresIdentity": false
       },
       "traits": {
-        "email": body.customer.email ? body.customer.email : '',
+        "email": body.email ? body.email : '',
         "userId": body.user_id ? body.user_id : '',
         "firstName": body.customer.first_name ? body.customer.first_name : '',
         "lastName": body.customer.last_name ? body.customer.last_name : '',
-        "name": body.first_name + ' ' + body.last_name
+        "name": body.customer.first_name + ' ' + body.customer.last_name
       }
     }
 
@@ -433,7 +433,7 @@ Shopify.Webhooks.Registry.addHandler("CHECKOUTS_CREATE", {
       "userId": body.user_id ? body.user_id : '',
       "firstName": body.customer.first_name ? body.customer.first_name : '',
       "lastName": body.customer.last_name ? body.customer.last_name : '',
-      "name": body.first_name + ' ' + body.last_name
+      "name": body.customer.first_name + ' ' + body.customer.last_name
     }
 
     console.log('Checkout data: ', checkoutData);
@@ -542,7 +542,7 @@ Shopify.Webhooks.Registry.addHandler("ORDERS_PAID", {
     console.log('Identify data: ', identifyData);
     
     // Axios POST request to SimonData Event Ingestion API
-    // axiosToSimonData(identifyData);
+    axiosToSimonData(identifyData);
 
   }
 });
