@@ -87,24 +87,26 @@ async function addSessionToken(token, customer) {
 
   try {
 
-    // Find sessionID - else create new in database
-    let existingSession = await findSessionByCustomerEmail(customer.email);
+    if (customer.id) {
+      // Find sessionID - else create new in database
+      let existingSession = await findSessionByCustomerEmail(customer.email);
 
-    // If already in database, but without cart_token - update with cart token
-    if (existingSession && !existingSession.cart_token) {
-      const updatedDate = new Date();
-      const update = {
-        "cart_token": token,
-        "date_updated": updatedDate
-      };
+      // If already in database, but without cart_token - update with cart token
+      if (existingSession && !existingSession.cart_token) {
+        const updatedDate = new Date();
+        const update = {
+          "cart_token": token,
+          "date_updated": updatedDate
+        };
 
-      const session = await SessionModel.findOneAndUpdate({
-        "customer_email": customer.email,
-      }, update);
-  
-      console.log('Session successfully updates: ', session);
+        const session = await SessionModel.findOneAndUpdate({
+          "customer_email": customer.email,
+        }, update);
+    
+        console.log('Session successfully updates: ', session);
 
-      return false;
+        return false;
+      }
     }
 
     const createdDate = new Date();
@@ -859,7 +861,7 @@ export async function createServer(
       if (session) {
         clientId = session.session_id;  
       } else {
-        
+
         if (req.body.email) {
           // Find sessionID - else create new in database
           let session = await findSessionByCustomerEmail(req.body.email);
