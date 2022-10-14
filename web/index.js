@@ -535,7 +535,8 @@ Shopify.Webhooks.Registry.addHandler("ORDERS_PAID", {
         "firstName": body.customer.first_name,
         "lastName": body.customer.last_name,
         "name": body.customer.first_name + ' ' + body.customer.last_name
-      }
+      },
+      "customer": body.customer
     }
 
     console.log('Identify data: ', identifyData);
