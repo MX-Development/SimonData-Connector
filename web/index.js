@@ -527,9 +527,11 @@ Shopify.Webhooks.Registry.addHandler("ORDERS_PAID", {
         "name": body.customer.first_name + ' ' + body.customer.last_name
       }
     }
+
+    console.log('Identify data: ', identifyData);
     
     // Axios POST request to SimonData Event Ingestion API
-    axiosToSimonData(identifyData);
+    // axiosToSimonData(identifyData);
 
   }
 });
