@@ -10,8 +10,17 @@ let Session = new Schema({
     customer_id: {
         type: String
     },
+    customer_email: {
+        type: String
+    },
     order_id: {
         type: String
+    },
+    date_created: {
+        type: Date
+    },
+    date_updated: {
+        type: Date
     }
 });
 

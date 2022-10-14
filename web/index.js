@@ -83,12 +83,40 @@ charactersLength));
  return result;
 }
 
-async function addSessionToken(token) {
+async function addSessionToken(token, customer) {
 
   try {
+
+    // Find sessionID - else create new in database
+    let existingSession = await findSessionByCustomerEmail(customer.email);
+
+    // If already in database, but without cart_token - update with cart token
+    if (existingSession && !existingSession.cart_token) {
+      const updatedDate = new Date();
+      const update = {
+        "cart_token": token,
+        "date_updated": updatedDate
+      };
+
+      const session = await SessionModel.findOneAndUpdate({
+        "customer_email": customer.email,
+      }, update);
+  
+      console.log('Session successfully updates: ', session);
+
+      return false;
+    }
+
+    const createdDate = new Date();
     const data = {
       "session_id": `sid_${generateId(15)}`,
-      "cart_token": token
+      "cart_token": token,
+      "date_created": createdDate
+    }
+
+    if (customer.id) {
+      data['customer_id'] = customer.id;
+      data['customer_email'] = customer.email;
     }
   
     let sess = new SessionModel(data);
@@ -136,6 +164,22 @@ async function findSessionByCustomerId(id) {
 
 }
 
+async function findSessionByCustomerEmail(email) {
+
+  try {
+    const session = await SessionModel.findOne({
+      "customer_email": email
+    });
+
+    return session;
+
+  } catch(err) {
+    console.log("Error: ", err);
+    return false;
+  }
+
+}
+
 async function findSessionByOrderId(id) {
 
   try {
@@ -157,8 +201,10 @@ async function updateSessionToken(token, data) {
   const update = data;
 
   try {
+    const updatedDate = new Date();
     const session = await SessionModel.findOneAndUpdate({
-      "cart_token": token
+      "cart_token": token,
+      "date_updated": updatedDate
     }, update);
 
     console.log('Session successfully updates: ', session);
@@ -268,14 +314,18 @@ Shopify.Webhooks.Registry.addHandler("CUSTOMERS_CREATE", {
     const body = JSON.parse(_body);
 
     // Find sessionID - else create new in database
-    const session = await findSessionByCustomerId(body.id);
+    let session = await findSessionByCustomerEmail(body.email);
     let clientId;
 
     if (session) {
       console.log('Found token: ', session);
       clientId = session.session_id;
     } else {
-      clientId = `sid_${generateId(15)}`;
+      session = await addSessionToken('', body.customer);
+
+      if (session) {
+        clientId = session.session_id;
+      }
     }
 
     // Create data object to send to SimonData
@@ -344,7 +394,7 @@ Shopify.Webhooks.Registry.addHandler("CHECKOUTS_CREATE", {
         clientId = session.session_id;
   
       } else {
-        session = await addSessionToken(body.cart_token);
+        session = await addSessionToken(body.cart_token, body.customer);
   
         if (session) {
           clientId = session.session_id;
@@ -468,7 +518,7 @@ Shopify.Webhooks.Registry.addHandler("ORDERS_PAID", {
       "timezone": new Date(body.created_at).getTimezoneOffset(),
       "sentAt": new Date(body.created_at).valueOf(),
       "traits": {
-        "email": body.customer.email ? body.customer.email : '',
+        "email": body.email ? body.email : '',
         "userId": body.customer.id,
         "firstName": body.customer.first_name,
         "lastName": body.customer.last_name,
@@ -809,11 +859,36 @@ export async function createServer(
       if (session) {
         clientId = session.session_id;  
       } else {
-        session = await addSessionToken(req.body.cart_token);
-  
-        if (session) {
-          clientId = session.session_id;
+        
+        if (req.body.email) {
+          // Find sessionID - else create new in database
+          let session = await findSessionByCustomerEmail(req.body.email);
+      
+          if (session) {
+            const updatedDate = new Date();
+            const update = {
+              "cart_token": req.body.token,
+              "date_updated": updatedDate
+            };
+      
+            session = await SessionModel.findOneAndUpdate({
+              "customer_email": req.body.email,
+            }, update);
+          } else {
+            session = await addSessionToken('', body.customer);
+      
+            if (session) {
+              clientId = session.session_id;
+            }
+          }
+        } else {
+          session = await addSessionToken(req.body.cart_token);
+    
+          if (session) {
+            clientId = session.session_id;
+          }
         }
+
       }
     } else {
       clientId = `sid_${generateId(15)}`;
