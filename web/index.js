@@ -427,6 +427,16 @@ Shopify.Webhooks.Registry.addHandler("CHECKOUTS_CREATE", {
         "name": body.first_name + ' ' + body.last_name
       }
     }
+
+    const checkoutData = {
+      "email": body.email ? body.email : '',
+      "userId": body.user_id ? body.user_id : '',
+      "firstName": body.customer.first_name ? body.customer.first_name : '',
+      "lastName": body.customer.last_name ? body.customer.last_name : '',
+      "name": body.first_name + ' ' + body.last_name
+    }
+
+    console.log('Checkout data: ', checkoutData);
     
     // Axios POST request to SimonData Event Ingestion API
     axiosToSimonData(data);
