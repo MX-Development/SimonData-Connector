@@ -87,7 +87,7 @@ async function addSessionToken(token, customer) {
 
   try {
 
-    if (customer.id) {
+    if (customer) {
       // Find sessionID - else create new in database
       let existingSession = await findSessionByCustomerEmail(customer.email);
 
@@ -116,7 +116,7 @@ async function addSessionToken(token, customer) {
       "date_created": createdDate
     }
 
-    if (customer.id) {
+    if (customer) {
       data['customer_id'] = customer.id;
       data['customer_email'] = customer.email;
     }
