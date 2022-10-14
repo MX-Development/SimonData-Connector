@@ -288,7 +288,7 @@ Shopify.Webhooks.Registry.addHandler("CUSTOMERS_CREATE", {
       "timezone": new Date(body.created_at).getTimezoneOffset(),
       "sentAt": new Date(body.created_at).valueOf(),
       "properties": {
-        "email": body.email,
+        "email": body.email ? body.email : '',
         "userId": body.id,
         "optIn": body.marketing_opt_in_level,
         "firstName": body.first_name,
@@ -309,7 +309,7 @@ Shopify.Webhooks.Registry.addHandler("CUSTOMERS_CREATE", {
       "timezone": new Date(body.created_at).getTimezoneOffset(),
       "sentAt": new Date(body.created_at).valueOf(),
       "traits": {
-        "email": body.email,
+        "email": body.email ? body.email : '',
         "userId": body.id,
         "firstName": body.first_name,
         "lastName": body.last_name,
@@ -368,10 +368,10 @@ Shopify.Webhooks.Registry.addHandler("CHECKOUTS_CREATE", {
            "requiresIdentity": false
       },
       "traits": {
-        "email": body.email,
-        "userId": body.id,
-        "firstName": body.first_name,
-        "lastName": body.last_name,
+        "email": body.customer.email ? body.customer.email : '',
+        "userId": body.user_id ? body.user_id : '',
+        "firstName": body.customer.first_name ? body.customer.first_name : '',
+        "lastName": body.customer.last_name ? body.customer.last_name : '',
         "name": body.first_name + ' ' + body.last_name
       }
     }
@@ -468,7 +468,7 @@ Shopify.Webhooks.Registry.addHandler("ORDERS_PAID", {
       "timezone": new Date(body.created_at).getTimezoneOffset(),
       "sentAt": new Date(body.created_at).valueOf(),
       "traits": {
-        "email": body.customer.email,
+        "email": body.customer.email ? body.customer.email : '',
         "userId": body.customer.id,
         "firstName": body.customer.first_name,
         "lastName": body.customer.last_name,
@@ -524,7 +524,7 @@ Shopify.Webhooks.Registry.addHandler("ORDERS_FULFILLED", {
            "requiresIdentity": false
       },
       "traits": {
-        "email": body.email,
+        "email": body.customer.email ? body.customer.email : '',
         "userId": body.user_id,
         "properties": {
             "cartItems": lineItems,
@@ -671,7 +671,7 @@ export async function createServer(
            "requiresIdentity": false
       },
       "traits": {
-        "email": req.body.email,
+        "email": req.body.email ? req.body.email : '',
         "productID": req.body.variant
       }
     }
@@ -721,7 +721,7 @@ export async function createServer(
       "type": "identify",
       "clientId": clientId,
       "traits": {
-        "email": req.body.email,
+        "email": req.body.email ? req.body.email : '',
         "userId": req.body.id,
         "firstName": req.body.first_name,
         "lastName": req.body.last_name,
