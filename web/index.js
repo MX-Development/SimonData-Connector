@@ -134,11 +134,57 @@ async function addSessionToken(token, customer) {
 
 }
 
+async function addSessionTokenWithoutToken(token, customer) {
+
+  try {
+
+    const createdDate = new Date();
+    const data = {
+      "session_id": `sid_${generateId(15)}`,
+      "session_token": token,
+      "cart_token": '',
+      "date_created": createdDate
+    }
+
+    if (customer) {
+      data['customer_id'] = customer.id;
+      data['customer_email'] = customer.email;
+    }
+  
+    let sess = new SessionModel(data);
+  
+    const session = await sess.save()
+
+    return session;
+
+  } catch(err) {
+    console.log("Error: ", err);
+    return false;
+  }
+
+}
+
 async function findBySessionToken(token) {
 
   try {
     const session = await SessionModel.findOne({
       "cart_token": token
+    });
+
+    return session;
+
+  } catch(err) {
+    console.log("Error: ", err);
+    return false;
+  }
+
+}
+
+async function findWithoutSessionToken(token) {
+
+  try {
+    const session = await SessionModel.findOne({
+      "session_token": token
     });
 
     return session;
@@ -816,14 +862,27 @@ export async function createServer(
 
     let clientId;
 
-    if (req.body.cart_token) {
+    if (req.body.cart_token && req.body.session_token) {
       // Find sessionID - else create new in database
-      let session = await findBySessionToken(req.body.cart_token);
+      let session = await findWithoutSessionToken(req.body.session_token);
   
       if (session) {
         clientId = session.session_id;  
       } else {
         session = await addSessionToken(req.body.cart_token);
+  
+        if (session) {
+          clientId = session.session_id;
+        }
+      }
+    } else if (!req.body.cart_token && req.body.session_token) {
+      // Find sessionID - else create new in database
+      let session = await findWithoutSessionToken(req.body.session_token);
+  
+      if (session) {
+        clientId = session.session_id;  
+      } else {
+        session = await addSessionTokenWithoutToken(req.body.session_token);
   
         if (session) {
           clientId = session.session_id;
