@@ -422,18 +422,18 @@ Shopify.Webhooks.Registry.addHandler("CHECKOUTS_CREATE", {
       "traits": {
         "email": body.email ? body.email : '',
         "userId": body.user_id ? body.user_id : '',
-        "firstName": body.customer.first_name ? body.customer.first_name : '',
-        "lastName": body.customer.last_name ? body.customer.last_name : '',
-        "name": body.customer.first_name + ' ' + body.customer.last_name
+        "firstName": body.first_name ? body.first_name : '',
+        "lastName": body.last_name ? body.last_name : '',
+        "name": body.first_name + ' ' + body.last_name
       }
     }
 
     const checkoutData = {
       "email": body.email ? body.email : '',
       "userId": body.user_id ? body.user_id : '',
-      "firstName": body.customer.first_name ? body.customer.first_name : '',
-      "lastName": body.customer.last_name ? body.customer.last_name : '',
-      "name": body.customer.first_name + ' ' + body.customer.last_name
+      "firstName": body.first_name ? body.first_name : '',
+      "lastName": body.last_name ? body.last_name : '',
+      "name": body.first_name + ' ' + body.last_name
     }
 
     console.log('Checkout data: ', checkoutData);
@@ -521,6 +521,8 @@ Shopify.Webhooks.Registry.addHandler("ORDERS_PAID", {
     // Axios POST request to SimonData Event Ingestion API
     axiosToSimonData(data);
 
+    if (!body.customer) return false;
+
     // Create data object to send to SimonData
     var identifyData = {
       "partnerId": simonDataPartnerId,
@@ -530,13 +532,12 @@ Shopify.Webhooks.Registry.addHandler("ORDERS_PAID", {
       "timezone": new Date(body.created_at).getTimezoneOffset(),
       "sentAt": new Date(body.created_at).valueOf(),
       "traits": {
-        "email": body.email ? body.email : '',
+        "email": body.customer.email ? body.customer.email : '',
         "userId": body.customer.id,
         "firstName": body.customer.first_name,
         "lastName": body.customer.last_name,
         "name": body.customer.first_name + ' ' + body.customer.last_name
-      },
-      "customer": body.customer
+      }
     }
 
     console.log('Identify data: ', identifyData);
@@ -589,7 +590,7 @@ Shopify.Webhooks.Registry.addHandler("ORDERS_FULFILLED", {
            "requiresIdentity": false
       },
       "traits": {
-        "email": body.customer.email ? body.customer.email : '',
+        "email": body.email ? body.email : '',
         "userId": body.user_id,
         "properties": {
             "cartItems": lineItems,
