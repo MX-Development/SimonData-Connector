@@ -1130,7 +1130,7 @@ export async function createServer(
   app.post("/api/webhooks", async (req, res) => {
     try {
       await Shopify.Webhooks.Registry.process(req, res);
-      console.log(`Webhook processed, returned status code 200`, req);
+      console.log(`Webhook processed, returned status code 200`, req.get('x-shopify-topic'));
     } catch (e) {
       console.log(`Failed to process webhook: ${e.message}`);
       if (!res.headersSent) {
