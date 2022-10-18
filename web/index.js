@@ -479,6 +479,8 @@ Shopify.Webhooks.Registry.addHandler("CHECKOUTS_CREATE", {
       clientId = `sid_${generateId(15)}`;
     }
 
+    const fullName = body.first_name ? body.first_name : '' + ' ' + body.last_name ? body.last_name : '';
+
     // Create data object to send to SimonData
     var data = {
       "partnerId": simonDataPartnerId,
@@ -497,7 +499,7 @@ Shopify.Webhooks.Registry.addHandler("CHECKOUTS_CREATE", {
         "userId": body.user_id ? body.user_id : '',
         "firstName": body.first_name ? body.first_name : '',
         "lastName": body.last_name ? body.last_name : '',
-        "name": body.first_name ? body.first_name : '' + ' ' + body.last_name ? body.last_name : ''
+        "name": fullName ? fullName : ''
       }
     }
 
@@ -506,7 +508,7 @@ Shopify.Webhooks.Registry.addHandler("CHECKOUTS_CREATE", {
       "userId": body.user_id ? body.user_id : '',
       "firstName": body.first_name ? body.first_name : '',
       "lastName": body.last_name ? body.last_name : '',
-      "name": body.first_name ? body.first_name : '' + ' ' + body.last_name ? body.last_name : ''
+      "name": fullName ? fullName : ''
     }
 
     console.log('Checkout data: ', checkoutData);
