@@ -1082,19 +1082,9 @@ export async function createServer(
         "variant": req.body.product.id, 
         "quantity": req.body.quantity
       }
-
     }
 
-    const traits = {
-      "customer": req.body.customer,
-      "email": req.body.email ? req.body.email : '',
-      "userId": req.body.id,
-      "firstName": req.body.first_name,
-      "lastName": req.body.last_name,
-      "name": req.body.first_name + ' ' + req.body.last_name
-    }
-
-    console.log('Add to cart cart route, traits: ', traits);
+    console.log('Add to cart cart route.');
     
     // Axios POST request to SimonData Event Ingestion API
     const result = await axiosToSimonData(data);
