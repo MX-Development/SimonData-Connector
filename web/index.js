@@ -248,16 +248,40 @@ async function findSessionByOrderId(id) {
 
 async function updateSessionToken(token, data) {
 
-  const update = data;
+  const updatedDate = new Date();
+
+  let update = data;
+  update['date_updated'] = updatedDate;
 
   try {
-    const updatedDate = new Date();
     const session = await SessionModel.findOneAndUpdate({
-      "cart_token": token,
-      "date_updated": updatedDate
+      "cart_token": token
     }, update);
 
     console.log('Session successfully updates: ', session);
+    return session;
+
+  } catch(err) {
+    console.log("Error updating session: ", err);
+    return false;
+  }
+}
+
+async function addCartTokenToSession(session_token, cart_token) {
+
+  const updatedDate = new Date();
+
+  const update = {
+    "cart_token": cart_token,
+    "date_updated": updatedDate
+  }
+
+  try {
+    const session = await SessionModel.findOneAndUpdate({
+      "session_token": session_token
+    }, update);
+
+    console.log('Cart token succesfully added to session: ', session);
     return session;
 
   } catch(err) {
@@ -870,6 +894,10 @@ export async function createServer(
   
       if (session) {
         clientId = session.session_id;  
+
+        if (!session.cart_token || session.cart_token == '') {
+          addCartTokenToSession(req.body.cart_token);
+        }
       } else {
         session = await addSessionToken(req.body.cart_token);
   
