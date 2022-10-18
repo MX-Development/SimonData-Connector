@@ -975,7 +975,7 @@ export async function createServer(
 
         if (!session.cart_token || session.cart_token == '') {
           console.log('adding cart_token to session', session);
-          addCartTokenToSession(req.body.cart_token, req.body.session_token);
+          addCartTokenToSession(req.body.session_token, req.body.cart_token);
         } else {
           console.log('not adding cart_token to session', session);
         }
