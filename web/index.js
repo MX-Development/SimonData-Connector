@@ -136,6 +136,8 @@ async function addSessionToken(token, customer) {
 
 async function addSessionTokenWithoutToken(token, customer) {
 
+  console.log('Adding session_token without cart_token');
+
   try {
 
     const createdDate = new Date();
@@ -864,7 +866,7 @@ export async function createServer(
 
     if (req.body.cart_token && req.body.session_token) {
       // Find sessionID - else create new in database
-      let session = await findWithoutSessionToken(req.body.session_token);
+      let session = await findBySessionToken(req.body.session_token);
   
       if (session) {
         clientId = session.session_id;  
@@ -886,6 +888,7 @@ export async function createServer(
   
         if (session) {
           clientId = session.session_id;
+          console.log('Session from session_token: ', session);
         }
       }
     } else {

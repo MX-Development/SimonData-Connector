@@ -7,6 +7,9 @@ let Session = new Schema({
     cart_token: {
         type: String
     },
+    session_token: {
+        type: String
+    },
     customer_id: {
         type: String
     },
