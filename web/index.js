@@ -899,7 +899,7 @@ export async function createServer(
 
         if (!session.cart_token || session.cart_token == '') {
           console.log('adding cart_token to session', session);
-          addCartTokenToSession(req.body.cart_token);
+          addCartTokenToSession(req.body.cart_token, req.body.session_token);
         } else {
           console.log('not adding cart_token to session', session);
         }
@@ -964,14 +964,19 @@ export async function createServer(
     let clientId;
 
     if (req.body.cart_token && req.body.session_token) {
+      console.log('cart_token && session_token present');
       // Find sessionID - else create new in database
       let session = await findWithoutSessionToken(req.body.session_token);
   
       if (session) {
         clientId = session.session_id;  
+        console.log('session found by session_token');
 
         if (!session.cart_token || session.cart_token == '') {
-          addCartTokenToSession(req.body.cart_token);
+          console.log('adding cart_token to session', session);
+          addCartTokenToSession(req.body.cart_token, req.body.session_token);
+        } else {
+          console.log('not adding cart_token to session', session);
         }
       } else {
         session = await addSessionToken(req.body.cart_token);
