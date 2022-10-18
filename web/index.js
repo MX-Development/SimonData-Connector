@@ -836,17 +836,40 @@ export async function createServer(
 
     let clientId;
 
-    if (req.body.cart_token) {
+    if (req.body.cart_token && req.body.session_token) {
+      console.log('cart_token && session_token present');
       // Find sessionID - else create new in database
-      let session = await findBySessionToken(req.body.cart_token);
+      let session = await findWithoutSessionToken(req.body.session_token);
   
       if (session) {
         clientId = session.session_id;  
+        console.log('session found by session_token');
+
+        if (!session.cart_token || session.cart_token == '') {
+          console.log('adding cart_token to session', session);
+          addCartTokenToSession(req.body.session_token, req.body.cart_token);
+        } else {
+          console.log('not adding cart_token to session', session);
+        }
       } else {
         session = await addSessionToken(req.body.cart_token);
   
         if (session) {
           clientId = session.session_id;
+        }
+      }
+    } else if (!req.body.cart_token && req.body.session_token) {
+      // Find sessionID - else create new in database
+      let session = await findWithoutSessionToken(req.body.session_token);
+  
+      if (session) {
+        clientId = session.session_id;  
+      } else {
+        session = await addSessionTokenWithoutToken(req.body.session_token);
+  
+        if (session) {
+          clientId = session.session_id;
+          console.log('Session from session_token: ', session);
         }
       }
     } else {
@@ -1059,9 +1082,19 @@ export async function createServer(
         "variant": req.body.product.id, 
         "quantity": req.body.quantity
       }
+
     }
 
-    console.log('Add to cart cart route.');
+    const traits = {
+      "customer": req.body.customer,
+      "email": req.body.email ? req.body.email : '',
+      "userId": req.body.id,
+      "firstName": req.body.first_name,
+      "lastName": req.body.last_name,
+      "name": req.body.first_name + ' ' + req.body.last_name
+    }
+
+    console.log('Add to cart cart route, traits: ', traits);
     
     // Axios POST request to SimonData Event Ingestion API
     const result = await axiosToSimonData(data);
