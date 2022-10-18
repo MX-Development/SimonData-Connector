@@ -958,47 +958,82 @@ export async function createServer(
 
     let clientId;
 
-    if (req.body.cart_token) {
+    if (req.body.cart_token && req.body.session_token) {
       // Find sessionID - else create new in database
-      let session = await findBySessionToken(req.body.cart_token);
+      let session = await findWithoutSessionToken(req.body.session_token);
+  
+      if (session) {
+        clientId = session.session_id;  
+
+        if (!session.cart_token || session.cart_token == '') {
+          addCartTokenToSession(req.body.cart_token);
+        }
+      } else {
+        session = await addSessionToken(req.body.cart_token);
+  
+        if (session) {
+          clientId = session.session_id;
+        }
+      }
+    } else if (!req.body.cart_token && req.body.session_token) {
+      // Find sessionID - else create new in database
+      let session = await findWithoutSessionToken(req.body.session_token);
   
       if (session) {
         clientId = session.session_id;  
       } else {
-
-        if (req.body.email) {
-          // Find sessionID - else create new in database
-          let session = await findSessionByCustomerEmail(req.body.email);
-      
-          if (session) {
-            const updatedDate = new Date();
-            const update = {
-              "cart_token": req.body.token,
-              "date_updated": updatedDate
-            };
-      
-            session = await SessionModel.findOneAndUpdate({
-              "customer_email": req.body.email,
-            }, update);
-          } else {
-            session = await addSessionToken('', body.customer);
-      
-            if (session) {
-              clientId = session.session_id;
-            }
-          }
-        } else {
-          session = await addSessionToken(req.body.cart_token);
-    
-          if (session) {
-            clientId = session.session_id;
-          }
+        session = await addSessionTokenWithoutToken(req.body.session_token);
+  
+        if (session) {
+          clientId = session.session_id;
+          console.log('Session from session_token: ', session);
         }
-
       }
     } else {
       clientId = `sid_${generateId(15)}`;
     }
+
+    // if (req.body.cart_token) {
+    //   // Find sessionID - else create new in database
+    //   let session = await findBySessionToken(req.body.cart_token);
+  
+    //   if (session) {
+    //     clientId = session.session_id;  
+    //   } else {
+
+    //     if (req.body.email) {
+    //       // Find sessionID - else create new in database
+    //       let session = await findSessionByCustomerEmail(req.body.email);
+      
+    //       if (session) {
+    //         const updatedDate = new Date();
+    //         const update = {
+    //           "cart_token": req.body.token,
+    //           "date_updated": updatedDate
+    //         };
+      
+    //         session = await SessionModel.findOneAndUpdate({
+    //           "customer_email": req.body.email,
+    //         }, update);
+    //       } else {
+    //         session = await addSessionToken('', body.customer);
+      
+    //         if (session) {
+    //           clientId = session.session_id;
+    //         }
+    //       }
+    //     } else {
+    //       session = await addSessionToken(req.body.cart_token);
+    
+    //       if (session) {
+    //         clientId = session.session_id;
+    //       }
+    //     }
+
+    //   }
+    // } else {
+    //   clientId = `sid_${generateId(15)}`;
+    // }
 
     // Create data object to send to SimonData
     var data = {
