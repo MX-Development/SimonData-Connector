@@ -592,6 +592,8 @@ Shopify.Webhooks.Registry.addHandler("ORDERS_PAID", {
       },
       "userId": body.user_id,
     }
+
+    console.log('Complete transaction data: ', data);
     
     // Axios POST request to SimonData Event Ingestion API
     axiosToSimonData(data);
