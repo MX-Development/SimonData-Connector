@@ -566,9 +566,9 @@ Shopify.Webhooks.Registry.addHandler("ORDERS_PAID", {
       lineItems.push(product);
     })
 
-    sendOrderedProducts(body, lineItems, clientId);
+    // sendOrderedProducts(body, lineItems, clientId);
 
-    sendRevenue(body, clientId);
+    // sendRevenue(body, clientId);
 
     // Create data object to send to SimonData
     var data = {
@@ -577,18 +577,19 @@ Shopify.Webhooks.Registry.addHandler("ORDERS_PAID", {
       "type": "track",
       "event": "complete_transaction",
       "clientId": clientId,
-      "ipAddress": body.browser_ip,
       "timezone": new Date(body.created_at).getTimezoneOffset(),
       "sentAt": new Date(body.created_at).valueOf(),
       "properties": {
-           "eventName": "placed_order",
-           "requiresIdentity": false
+        "transactionId": body.checkout_id,
+        "revenue": body.total_price,
+        "cartItems": lineItems,
       },
       "traits": {
-          "userId": body.user_id,
-          "cartItems": lineItems,
-          "transactionId": body.checkout_id,
-          "revenue": body.total_price
+        "email": body.customer.email ? body.customer.email : '',
+        "userId": body.customer.id,
+        "firstName": body.customer.first_name,
+        "lastName": body.customer.last_name,
+        "name": body.customer.first_name + ' ' + body.customer.last_name
       },
       "userId": body.user_id,
     }
