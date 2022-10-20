@@ -557,7 +557,6 @@ Shopify.Webhooks.Registry.addHandler("ORDERS_PAID", {
       const product = {
         "productId": item.product_id,
         "variant": item.variant_id,
-        "sku": item.sku,
         "productName": item.title,
         "price": item.price,
         "quantity": item.quantity
@@ -565,6 +564,8 @@ Shopify.Webhooks.Registry.addHandler("ORDERS_PAID", {
 
       lineItems.push(product);
     })
+
+    console.log("Line items for ct: ", lineItems);
 
     // sendOrderedProducts(body, lineItems, clientId);
 
